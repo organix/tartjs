@@ -37,6 +37,7 @@ var serial = config.createSerial(function (event) {
     console.log('becoming something else');
     console.dir(event);
     
+    event.sponsor.send(event.message.reference, 'message from serial actor');
     event.sponsor.send(event.target, event.message);
     event.become(function (event) {
         console.log('got message with new behavior', event.message);
