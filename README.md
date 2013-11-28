@@ -1,8 +1,8 @@
-# tartjs
+# tart
 
 _Stability: 1 - [Experimental](https://github.com/tristanls/stability-index#stability-1---experimental)_
 
-[![NPM version](https://badge.fury.io/js/tartjs.png)](http://npmjs.org/package/tartjs)
+[![NPM version](https://badge.fury.io/js/tart.png)](http://npmjs.org/package/tart)
 
 JavaScript implementation of [Tiny Actor Run-Time](https://github.com/organix/tart).
 
@@ -13,7 +13,7 @@ JavaScript implementation of [Tiny Actor Run-Time](https://github.com/organix/ta
 ## Usage
 
 ```javascript
-var Tart = require('tartjs');
+var Tart = require('tart');
 
 var config = new Tart();
 
@@ -85,7 +85,7 @@ The benchmark implements a modified version of the challenge by creating 100,000
 
 ## Overview
 
-The goal of `tartjs` is to provide the smallest possible actor library in JavaScript that has the full power of a "pure" actor model of computation.
+The goal of `tart` is to provide the smallest possible actor library in JavaScript that has the full power of a "pure" actor model of computation.
 
 ### Configurations
 
@@ -96,7 +96,7 @@ The goal of `tartjs` is to provide the smallest possible actor library in JavaSc
 Actors consist only of behaviors and maintain no internal state. To create a new actor:
 
 ```javascript
-var Tart = require('tartjs');
+var Tart = require('tart');
 var config = new Tart();
 var actor = config.createActor(function (event) { /* ... */ });
 ```
@@ -106,7 +106,7 @@ var actor = config.createActor(function (event) { /* ... */ });
 Value actors consist of behaviors and state, but cannot change the behavior. To create a new value actor:
 
 ```javascript
-var Tart = require('tartjs');
+var Tart = require('tart');
 var config = new Tart();
 var value = config.createValue(function (event) { /* ... */ }, { /* state */ });
 ```
@@ -116,7 +116,7 @@ var value = config.createValue(function (event) { /* ... */ }, { /* state */ });
 Serial actors have state and can change their behaviors by using `event.become()` function. To create a new serial actor:
 
 ```javascript
-var Tart = require('tartjs');
+var Tart = require('tart');
 var config = new Tart();
 var serial = config.createSerial(function (event) { /* ... */ }, { /* state */ });
 ```

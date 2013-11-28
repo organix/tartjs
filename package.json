@@ -1,5 +1,5 @@
 {
-  "name": "tartjs",
+  "name": "tart",
   "version": "0.0.0",
   "description": "Tiny Actor Run-Time in JavaScript",
   "scripts": {
