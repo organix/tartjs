@@ -1,0 +1,26 @@
+{
+  "name": "tartjs",
+  "version": "0.0.0",
+  "description": "Tiny Actor Run-Time in JavaScript",
+  "scripts": {
+    "erlangChallenge": "node scripts/erlangChallenge.js",
+    "test": "node scripts/test.js"
+  },
+  "main": "index.js",
+  "devDependencies": {
+    "nodeunit": "0.8.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:organix/tartjs.git"
+  },
+  "keywords": [
+    "actor",
+    "run-time"
+  ],
+  "contributors": [
+    "Dale Schumacher <dale.schumacher@gmail.com>",
+    "Tristan Slominski <tristan.slominski@gmail.com>"
+  ],
+  "license": "MIT"
+}
