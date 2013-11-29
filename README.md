@@ -63,6 +63,9 @@ Erlang Challenge consists of creating a ring of M actors, sending N simple messa
 The benchmark implements a modified version of the challenge by creating 100,000 actors and running 10 simple messages around the ring.
 
     npm run erlangChallenge
+
+### 100,000 actor ring
+
     constructed 100000 actor ring
     ..........
     done
@@ -83,6 +86,79 @@ The benchmark implements a modified version of the challenge by creating 100,000
     611477526
     loop average:
     677102029.2727273
+
+### 500,000 actor ring
+
+    constructed 500000 actor ring
+    ..........
+    done
+    all times in NANOSECONDS
+    construction time:
+    15699391338
+    loop times:
+    3122589596
+    4428705900
+    3168811376
+    3148462807
+    4271548591
+    3114938961
+    3122038358
+    4225776538
+    3142170730
+    3152706142
+    4222241238
+    loop average:
+    3556362748.818182
+
+For rings greater than 500,000 you need to expand memory available to V8. To do that, the following command will start the Erlang challenge.
+
+    node --max_old_space_size=10000 scripts/erlangChallenge.js
+
+### 1,000,000 actor ring
+
+    constructed 1000000 actor ring
+    ..........
+    done
+    all times in NANOSECONDS
+    construction time:
+    32599984244
+    loop times:
+    11181220357
+    6304391089
+    6519316600
+    10246378112
+    6307659678
+    9487703937
+    6380666312
+    6460661327
+    9497392579
+    6488069658
+    6557091244
+    loop average:
+    7766413717.545454
+
+### 2,000,000 actor ring
+
+    constructed 2000000 actor ring
+    ..........
+    done
+    all times in NANOSECONDS
+    construction time:
+    93315337453
+    loop times:
+    16680960032
+    32787432196
+    20783674284
+    23940940039
+    37257725842
+    26190907699
+    36187586868
+    29111337299
+    31455764923
+    45933963266
+    34303152315
+    loop average:
+    30421222251.18182
 
 ## Overview
 
