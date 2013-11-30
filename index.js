@@ -34,23 +34,23 @@ var Tart = module.exports = function Tart () {
     Object.freeze(this);
 };
 Tart.prototype.create = function create(behavior) {
-	var actor = function send(message) {
-		var event = {
-			message: message,
-			context: context
-		};
-		setImmediate(deliver, event);
-	};
-	var context = {
-		self: actor,
-		behavior: behavior,
-		sponsor: this
-	};
-	return actor;
+    var actor = function send(message) {
+        var event = {
+            message: message,
+            context: context
+        };
+        setImmediate(deliver, event);
+    };
+    var context = {
+        self: actor,
+        behavior: behavior,
+        sponsor: this
+    };
+    return actor;
 };
 
 var deliver = function deliver(event) {
-	var behavior = event.context.behavior;
-	var self = event.context.self;
-	behavior.call(self, event);
+    var behavior = event.context.behavior;
+    var self = event.context.self;
+    behavior.call(self, event);
 };
