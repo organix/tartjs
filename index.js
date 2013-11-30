@@ -84,7 +84,6 @@ Tart.prototype.send = function send (target, message) {
 };
 
 var actSerial = function actSerial (event) {
-    var self = event.target;
     var serial = event.serial;
     serial.nextBehavior = serial.currentBehavior;
     serial.currentBehavior({sponsor: event.sponsor, target: event.target,
