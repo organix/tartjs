@@ -31,65 +31,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 "use strict";
 
 var Tart = module.exports = function Tart () {
-    var self = this;
-
-    self.sponsor = Object.freeze({
-        createActor: function () { return self.createActor.apply(self, arguments); },
-        createValue: function () { return self.createValue.apply(self, arguments); },
-        createSerial: function () { return self.createSerial.apply(self, arguments); },
-        fail: function () { self.fail.apply(self, arguments); },
-        send: function () { self.send.apply(self, arguments); }
-    });
-
-    Object.freeze(self);
-};
-
-Tart.prototype.createActor = function createActor (behavior) {
-    var ref = function (sponsor, message) {
-        setImmediate(behavior, 
-            {sponsor: sponsor, target: ref, message: message});
+    var sponsor = this;
+    var deliver = function deliver (event) {
+        var behavior = event.context.behavior;
+        var self = event.context.self;
+        self.event = event;
+        try {
+            // invoke behavior on actor
+            behavior.call(self, event.message);
+        } catch (ex) {
+            // restore previous behavior
+            event.context.behavior = behavior;
+        }
+        delete self.event;
     };
-    return Object.freeze(ref);
-};
-
-Tart.prototype.createValue = function createValue (behavior, data) {
-    data = data || {};
-    var ref = function (sponsor, message) {
-        setImmediate(behavior,
-            {sponsor: sponsor, target: ref, data: data, message: message});
+    var create = function create (behavior) {
+        var context = {
+            behavior: behavior,
+            sponsor: sponsor
+        };
+        var actor = function (message) {
+            var event = {
+                message: message,
+                context: context
+            };
+            setImmediate(deliver, event);
+        };
+        context.self = actor;
+        return actor;
     };
-    return Object.freeze(ref);
+    sponsor.create = create;
+    Object.freeze(sponsor);
 };
-
-Tart.prototype.createSerial = function createSerial (initialBehavior, data) {
-    data = data || {};
-    var serial = {
-        currentBehavior: initialBehavior,
-        nextBehavior: initialBehavior
-    };
-    var become = function (behavior) {
-        serial.nextBehavior = behavior;
-    };
-    var ref = function (sponsor, message) {
-        setImmediate(actSerial,
-            {sponsor: sponsor, target: ref, data: data, message: message, 
-                serial: serial, become: become});
-    };
-    return Object.freeze(ref);
-};
-
-Tart.prototype.send = function send (target, message) {
-    var self = this;
-    target(self.sponsor, message);
-};
-
-var actSerial = function actSerial (event) {
-    var self = event.target;
-    var serial = event.serial;
-    serial.nextBehavior = serial.currentBehavior;
-    serial.currentBehavior({sponsor: event.sponsor, target: event.target,
-        data: event.data, message: event.message, become: event.become});
-    serial.currentBehavior = serial.nextBehavior;
-};
-
-Object.freeze(Tart);

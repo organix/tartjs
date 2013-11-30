@@ -38,31 +38,37 @@ test['one shot actor should forward the first message and become sink afterwards
     test.expect(2);
     var config = new Tart();
 
-    var sinkBeh = function sinkBeh (event) { 
-        test.equal(event.message, 'second');
-        event.sponsor.send(testComplete, 'sinkBehDone');
-    };
-
-    var oneShotBeh = function oneShotBeh (event) {
-        var destination = event.data && event.data.destination;
-        event.sponsor.send(destination, event.message);
-        event.become(sinkBeh);
-    };
-
-    var destination = config.createActor(function (event) {
-        test.equal(event.message, 'first');
-        event.sponsor.send(testComplete, 'destinationDone');
+    var destination = config.create(function (msg) {
+        test.equal(msg, 'first');
+        testComplete('destinationDone');
     });
 
-    var oneShot = config.createSerial(oneShotBeh, {destination: destination});
+    var oneShot = config.create((function () {
+        var dest = destination;
+        return function (msg) {
+            this.event.context.behavior = function (msg) {
+                test.equal(msg, 'second');
+                testComplete('sinkBehDone');
+            };
+            dest(msg);
+        };
+    })());
 
-    var testComplete = config.createValue(function (event) {
-        event.data[event.message] = true;
-        if (event.data.sinkBehDone && event.data.destinationDone) {
-            test.done();
-        }
-    }, {sinkBehDone: false, destinationDone: false});
+    var testComplete = config.create((function () {
+        var sinkBehDone = false;
+        var destinationDone = false;
+        return function (msg) {
+            if (msg == 'sinkBehDone') {
+                sinkBehDone = true;
+            } else if (msg == 'destinationDone') {
+                destinationDone = true;
+            }
+            if (sinkBehDone && destinationDone) {
+                test.done();
+            }
+        };
+    })());
 
-    config.send(oneShot, 'first');
-    config.send(oneShot, 'second');
+    oneShot('first');
+    oneShot('second');
 };

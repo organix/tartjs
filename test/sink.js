@@ -37,9 +37,11 @@ var test = module.exports = {};
 test['sink behavior should receive message'] = function (test) {
     test.expect(1);
     var config = new Tart();
-    var sinkActor = config.createActor(function (event) {
-        test.equal(event.message, 'foo'); 
-        test.done();
+
+    var sinkActor = config.create(function (msg) {
+        test.equal(msg, 'foo'); 
+        test.done();        
     });
-    config.send(sinkActor, 'foo');
+
+    sinkActor('foo');
 };
