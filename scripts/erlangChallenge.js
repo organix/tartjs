@@ -80,37 +80,41 @@ var seed = config.createValue(function (event) {
         event.sponsor.send(event.data.next, event.message);
     } else {
         loopCompletionTimes.push(process.hrtime());
-        process.stdout.write('\ndone\n');
-        var constructionTime = [];
-        constructionTime[0] = constructionEndTime[0] - constructionStartTime[0];
-        constructionTime[1] = constructionEndTime[1] - constructionStartTime[1];
-        console.log('all times in NANOSECONDS');
-        console.log('construction time:');
-        console.log(constructionTime[0] * 1e9 + constructionTime[1]);
-        console.log('loop times:');
-        var loopIntervals = [];
-        var prevTime = constructionEndTime;
-        var counter = 0;
-        loopCompletionTimes.forEach(function(time) {
-            counter++;
-            var interval = [];
-            interval[0] = time[0] - prevTime[0];
-            interval[1] = time[1] - prevTime[1];
-            console.log(interval[0] * 1e9 + interval[1]);
-            loopIntervals.push(interval);
-            prevTime = time;
-        });
-        console.log('loop average:');
-        var avgInterval = [0, 0];
-        loopIntervals.forEach(function(interval) {
-            avgInterval[0] += interval[0];
-            avgInterval[1] += interval[1];
-        });
-        avgInterval[0] = avgInterval[0] / counter;
-        avgInterval[1] = avgInterval[1] / counter;
-        console.log(avgInterval[0] * 1e9 + avgInterval[1]);        
+        reportProcessTimes();
     }
 });
+
+var reportProcessTimes = function () {
+    process.stdout.write('\ndone\n');
+    var constructionTime = [];
+    constructionTime[0] = constructionEndTime[0] - constructionStartTime[0];
+    constructionTime[1] = constructionEndTime[1] - constructionStartTime[1];
+    console.log('all times in NANOSECONDS');
+    console.log('construction time:');
+    console.log(constructionTime[0] * 1e9 + constructionTime[1]);
+    console.log('loop times:');
+    var loopIntervals = [];
+    var prevTime = constructionEndTime;
+    var counter = 0;
+    loopCompletionTimes.forEach(function(time) {
+        counter++;
+        var interval = [];
+        interval[0] = time[0] - prevTime[0];
+        interval[1] = time[1] - prevTime[1];
+        console.log(interval[0] * 1e9 + interval[1]);
+        loopIntervals.push(interval);
+        prevTime = time;
+    });
+    console.log('loop average:');
+    var avgInterval = [0, 0];
+    loopIntervals.forEach(function(interval) {
+        avgInterval[0] += interval[0];
+        avgInterval[1] += interval[1];
+    });
+    avgInterval[0] = avgInterval[0] / counter;
+    avgInterval[1] = avgInterval[1] / counter;
+    console.log(avgInterval[0] * 1e9 + avgInterval[1]);        
+};
 
 constructionStartTime = process.hrtime();
 config.send(seed, 'build');
