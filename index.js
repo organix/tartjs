@@ -31,35 +31,26 @@ OTHER DEALINGS IN THE SOFTWARE.
 "use strict";
 
 var Tart = module.exports = function Tart () {
-    var sponsor = this;
-    var deliver = function deliver (event) {
-        var behavior = event.context.behavior;
-        var self = event.context.self;
-        self.event = event;
-        try {
-            // invoke behavior on actor
-            behavior.call(self, event.message);
-        } catch (ex) {
-            // restore previous behavior
-            event.context.behavior = behavior;
-        }
-        delete self.event;
-    };
-    var create = function create (behavior) {
-        var context = {
-            behavior: behavior,
-            sponsor: sponsor
-        };
-        var actor = function (message) {
-            var event = {
-                message: message,
-                context: context
-            };
-            setImmediate(deliver, event);
-        };
-        context.self = actor;
-        return actor;
-    };
-    sponsor.create = create;
-    Object.freeze(sponsor);
+    Object.freeze(this);
+};
+Tart.prototype.create = function create(behavior) {
+	var actor = function send(message) {
+		var event = {
+			message: message,
+			context: context
+		};
+		setImmediate(deliver, event);
+	};
+	var context = {
+		self: actor,
+		behavior: behavior,
+		sponsor: this
+	};
+	return actor;
+};
+
+var deliver = function deliver(event) {
+	var behavior = event.context.behavior;
+	var self = event.context.self;
+	behavior.call(self, event);
 };
