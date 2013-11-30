@@ -38,29 +38,29 @@ test['one shot actor should forward the first message and become sink afterwards
     test.expect(2);
     var config = new Tart();
 
-    var destination = config.create(function (msg) {
-        test.equal(msg, 'first');
+    var destination = config.create(function (event) {
+        test.equal(event.message, 'first');
         testComplete('destinationDone');
     });
 
     var oneShot = config.create((function () {
         var dest = destination;
-        return function (msg) {
-            this.event.context.behavior = function (msg) {
-                test.equal(msg, 'second');
+        return function (event) {
+            event.context.behavior = function (event) {
+                test.equal(event.message, 'second');
                 testComplete('sinkBehDone');
             };
-            dest(msg);
+            dest(event.message);
         };
     })());
 
     var testComplete = config.create((function () {
         var sinkBehDone = false;
         var destinationDone = false;
-        return function (msg) {
-            if (msg == 'sinkBehDone') {
+        return function (event) {
+            if (event.message == 'sinkBehDone') {
                 sinkBehDone = true;
-            } else if (msg == 'destinationDone') {
+            } else if (event.message == 'destinationDone') {
                 destinationDone = true;
             }
             if (sinkBehDone && destinationDone) {

@@ -38,8 +38,8 @@ test['sink behavior should receive message'] = function (test) {
     test.expect(1);
     var config = new Tart();
 
-    var sinkActor = config.create(function (msg) {
-        test.equal(msg, 'foo'); 
+    var sinkActor = config.create(function (event) {
+        test.equal(event.message, 'foo'); 
         test.done();        
     });
 
