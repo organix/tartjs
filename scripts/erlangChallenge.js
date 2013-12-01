@@ -78,40 +78,40 @@ var ring_builder = function ring_builder(m) {
     };
 };
 
-var ringMemberBeh = function () {
-    var next = null;
+var ringMemberBeh = function(state) {
+	state = state || { next:null };
     return function(msg, ctx) {
         if (msg.name == 'build') {
             if (msg.counter > 0) {
-                next = ctx.sponsor.create(ringMemberBeh());
+                state.next = ctx.sponsor.create(ringMemberBeh());
                 msg.counter--;
-                next(msg);
+                state.next(msg);
             } else {
-                next = msg.seed;
-                next('start');
+                state.next = msg.seed;
+                state.next('start');
             }
         } else {
-            next(msg);
+            state.next(msg);
         }
     };
 };
 
-var seedBeh = function () {
-    var next = null;
+var seedBeh = function(state) {
+	state = state || { next:null };
     return function(msg, ctx) {
         if (msg == 'build') {
-            next = ctx.sponsor.create(ringMemberBeh());
-            next({name: 'build', counter: M - 1, seed: ctx.self});
+            state.next = ctx.sponsor.create(ringMemberBeh());
+            state.next({name: 'build', counter: M - 1, seed: ctx.self});
         } else if (msg == 'start') {
             constructionEndTime = process.hrtime();
             console.log('constructed ' + M + ' actor ring');
-            next(N);
+            state.next(N);
         } else if (msg > 0) {
             loopCompletionTimes.push(process.hrtime());
             // keep sending
             process.stdout.write('.');
             msg--;
-            next(msg);
+            state.next(msg);
         } else {
             loopCompletionTimes.push(process.hrtime());
             reportProcessTimes();

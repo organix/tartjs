@@ -30,10 +30,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = module.exports = function Tart() {
-    Object.freeze(this);
-};
-Tart.prototype.create = function create(behavior) {
+var Tart = module.exports = function Tart() {};
+Tart.prototype.create = function create(behavior, state) {
     var actor = function send(message) {
         setImmediate(function deliver() {
             context.behavior(message, context);
@@ -42,6 +40,7 @@ Tart.prototype.create = function create(behavior) {
     var context = {
         self: actor,
         behavior: behavior,
+        state: state,
         sponsor: this
     };
     return actor;
