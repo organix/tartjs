@@ -10,6 +10,20 @@ JavaScript implementation of [Tiny Actor Run-Time](https://github.com/organix/ta
 
 [@dalnefre](https://github.com/dalnefre), [@tristanls](https://github.com/tristanls)
 
+## Overview
+
+The goal of `tart` is to provide the smallest possible actor library in JavaScript that has the full power of a "pure" actor model of computation.
+
+  * [Usage](#usage)
+  * [Tests](#tests)
+  * [Benchmarks](#benchmarks) 
+  * [Documentation](#documentation)
+  * [Sources](#sources)
+
+`tart` also happens to fit into a tweet :D
+
+    function C(){}.prototype.a=function (b,x){var a=function (m){setImmediate(function (){c.b(m, c);});};var c={a:a,b:b,x:x,s:this};return a;};
+
 ## Usage
 
 To run the below example, run:
@@ -134,14 +148,6 @@ For rings of sizes larger than 4 Million you may need to expand memory available
     244265390009
     loop average:
     244265390009
-
-## Overview
-
-The goal of `tart` is to provide the smallest possible actor library in JavaScript that has the full power of a "pure" actor model of computation.
-
-`tart` also happens to fit into a tweet :D
-
-    function C(){}.prototype.a=function (b,x){var a=function (m){setImmediate(function (){c.b(m, c);});};var c={a:a,b:b,x:x,s:this};return a;};
 
 ## Documentation
 
