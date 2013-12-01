@@ -18,23 +18,21 @@ var statefulActorBeh = function (state) {
 var statefulActor = config.create(statefulActorBeh({some: 'state'}));
 
 // create an actor with state that changes behavior
-var firstBeh = function (state) {
-    return function (message, context) {
+var flipFlop = function (state) {
+    var firstBeh = function (message, context) {
         console.log('firstBeh got message', message);
         console.log('actor state', state);
-        context.behavior = secondBeh(state);
+        context.behavior = secondBeh;
     };
-};
-
-var secondBeh = function (state) {
-    return function (message, context) {
+    var secondBeh = function (message, context) {
         console.log('secondBeh got message', message);
         console.log('actor state', state);
-        context.behavior = firstBeh(state);
-    };  
+        context.behavior = firstBeh;
+    };
+    return firstBeh;
 };
 
-var serialActor = config.create(firstBeh({some: 'state'}));
+var serialActor = config.create(flipFlop({some: 'state'}));
 
 // create an actor that creates a chain of actors
 var chainActorBeh = function (count) {
