@@ -38,33 +38,33 @@ test["serial actor's latest behavior should be the one handling the next message
     test.expect(9);
     var config = new Tart();
 
-    var firstBeh = function firstBeh (event) {
-        event.become(secondBeh);
-        test.equal(event.message, 'foo');
-        test.ok(!event.data.first);
-        event.data.first = true;
-        event.sponsor.send(event.target, event.message);
-        event.sponsor.send(event.target, event.message);
+    var firstBeh = function firstBeh (message, context) {
+        context.behavior = secondBeh;
+        test.equal(message, 'foo');
+        test.ok(!context.state.first);
+        context.state.first = true;
+        context.self(message);
+        context.self(message);
     };
 
-    var secondBeh = function secondBeh (event) {
-        event.become(thirdBeh);
-        test.equal(event.message, 'foo');
-        test.ok(event.data.first);
-        test.ok(!event.data.second);
-        event.data.second = true;
+    var secondBeh = function secondBeh (message, context) {
+        context.behavior = thirdBeh;
+        test.equal(message, 'foo');
+        test.ok(context.state.first);
+        test.ok(!context.state.second);
+        context.state.second = true;
     };
 
-    var thirdBeh = function thirdBeh (event) {
-        test.equal(event.message, 'foo');
-        test.ok(event.data.first);
-        test.ok(event.data.second);
-        test.ok(!event.data.third);
+    var thirdBeh = function thirdBeh (message, context) {
+        test.equal(message, 'foo');
+        test.ok(context.state.first);
+        test.ok(context.state.second);
+        test.ok(!context.state.third);
         test.done();
     };
 
-    var serial = config.createSerial(firstBeh, 
+    var serial = config.create(firstBeh, 
             {first: false, second: false, third: false});
 
-    config.send(serial, 'foo');
+    serial('foo');
 };

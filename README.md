@@ -12,42 +12,70 @@ JavaScript implementation of [Tiny Actor Run-Time](https://github.com/organix/ta
 
 ## Usage
 
+To run the below example, run:
+
+    npm run examples-readme
+
 ```javascript
 var Tart = require('tart');
 
 var config = new Tart();
 
-// create an actor that has no state and can't change behavior
-var actor = config.createActor(function (event) {
-    console.log('got message', event.message);
-    console.dir(event);
+// create an actor that has no state
+var statelessActor = config.create(function (message) {
+    console.log('got message', message); 
 });
 
-// create a value actor that has state, but can't change behavior
-var value = config.createValue(function (event) {
-    console.log('got message', event.message); 
-    console.log('actor state', event.data);
-    console.dir(event);
-}, {foo: 'bar'});
+// create an actor with state
+var statefulActorBeh = function (state) {
+    return function (message) {
+        console.log('got message', message);
+        console.log('actor state', state);
+    };
+};
 
-// create a serial actor that has state and can change behavior
-var serial = config.createSerial(function (event) {
-    console.log('got message', event.message);
-    console.log('actor state', event.data);
-    console.log('becoming something else');
-    console.dir(event);
-    
-    event.sponsor.send(event.message.reference, 'message from serial actor');
-    event.sponsor.send(event.target, event.message);
-    event.become(function (event) {
-        console.log('got message with new behavior', event.message);
-        console.dir(event);
-    });
-}, {foo: 'bar'});
+var statefulActor = config.create(statefulActorBeh({some: 'state'}));
 
-config.send(actor, 'some message');
-config.send(value, {some: 'other message'});
-config.send(serial, {message: 'with', reference: actor});
+// create an actor with state that changes behavior
+var firstBeh = function (state) {
+    return function (message, context) {
+        console.log('firstBeh got message', message);
+        console.log('actor state', state);
+        context.behavior = secondBeh(state);
+    };
+};
+
+var secondBeh = function (state) {
+    return function (message, context) {
+        console.log('secondBeh got message', message);
+        console.log('actor state', state);
+        context.behavior = firstBeh(state);
+    };  
+};
+
+var serialActor = config.create(firstBeh({some: 'state'}));
+
+// create an actor that creates a chain of actors
+var chainActorBeh = function (count) {
+    return function (message, context) {
+        console.log('chain actor', count);
+        if (--count >= 0) {
+            var next = context.sponsor.create(chainActorBeh(count));
+            next(message);
+        }
+    }; 
+};
+
+var chainActor = config.create(chainActorBeh(10));
+
+// send messages to the actors
+statelessActor('some message');
+statefulActor({some: 'other message'});
+serialActor('first message');
+serialActor('second message');
+serialActor('third message');
+serialActor('fourth message');
+chainActor('go');
 ```
 
 ## Tests
@@ -66,141 +94,79 @@ The benchmark implements a modified version of the challenge by creating 100,000
 
 ### 100,000 actor ring
 
-    constructed 100000 actor ring
+    starting 100000 actor ring
+    sending 10 messages
     ..........
     done
     all times in NANOSECONDS
     construction time:
-    2900829022
+    336492833
     loop times:
-    627685921
-    631848011
-    666029990
-    731236694
-    775333540
-    615891053
-    612743213
-    684856367
-    721228999
-    769791008
-    611477526
+    221762650
+    212925428
+    213672756
+    215595649
+    215465809
+    216958143
+    217696839
+    221343351
+    222385758
+    226308376
     loop average:
-    677102029.2727273
+    218411475.9
 
-### 500,000 actor ring
-
-    constructed 500000 actor ring
-    ..........
-    done
-    all times in NANOSECONDS
-    construction time:
-    15699391338
-    loop times:
-    3122589596
-    4428705900
-    3168811376
-    3148462807
-    4271548591
-    3114938961
-    3122038358
-    4225776538
-    3142170730
-    3152706142
-    4222241238
-    loop average:
-    3556362748.818182
-
-For rings greater than 500,000 you need to expand memory available to V8. To do that, the following command will start the Erlang challenge.
+For rings of sizes larger than 4 Million you may need to expand memory available to V8. To do that, the following command will start the Erlang challenge with ~10GB of memory available:
 
     node --max_old_space_size=10000 scripts/erlangChallenge.js
 
-### 1,000,000 actor ring
+### 30,000,000 actor ring
 
-    constructed 1000000 actor ring
-    ..........
+30 Million actor ring benchmark took up about ~8.5 GB of memory.
+
+    starting 30000000 actor ring
+    sending 1 messages
+    .
     done
     all times in NANOSECONDS
     construction time:
-    32599984244
+    233098891645
     loop times:
-    11181220357
-    6304391089
-    6519316600
-    10246378112
-    6307659678
-    9487703937
-    6380666312
-    6460661327
-    9497392579
-    6488069658
-    6557091244
+    244265390009
     loop average:
-    7766413717.545454
-
-### 2,000,000 actor ring
-
-    constructed 2000000 actor ring
-    ..........
-    done
-    all times in NANOSECONDS
-    construction time:
-    93315337453
-    loop times:
-    16680960032
-    32787432196
-    20783674284
-    23940940039
-    37257725842
-    26190907699
-    36187586868
-    29111337299
-    31455764923
-    45933963266
-    34303152315
-    loop average:
-    30421222251.18182
+    244265390009
 
 ## Overview
 
 The goal of `tart` is to provide the smallest possible actor library in JavaScript that has the full power of a "pure" actor model of computation.
 
-### Configurations
+`tart` also happens to fit into a tweet :D
 
-*TODO*
-
-### Actors
-
-Actors consist only of behaviors and maintain no internal state. To create a new actor:
-
-```javascript
-var Tart = require('tart');
-var config = new Tart();
-var actor = config.createActor(function (event) { /* ... */ });
-```
-
-### Value Actors
-
-Value actors consist of behaviors and state, but cannot change the behavior. To create a new value actor:
-
-```javascript
-var Tart = require('tart');
-var config = new Tart();
-var value = config.createValue(function (event) { /* ... */ }, { /* state */ });
-```
-
-### Serial Actors
-
-Serial actors have state and can change their behaviors by using `event.become()` function. To create a new serial actor:
-
-```javascript
-var Tart = require('tart');
-var config = new Tart();
-var serial = config.createSerial(function (event) { /* ... */ }, { /* state */ });
-```
+    function C(){}.prototype.a=function (b,x){var a=function (m){setImmediate(function (){c.b(m, c);});};var c={a:a,b:b,x:x,s:this};return a;};
 
 ## Documentation
 
-*TODO*
+**Public API**
+
+  * [new Tart()](#new-tart)
+  * [tart.create(behavior, \[state\])](#tartcreatebehavior-state)
+
+### new Tart()
+
+Creates a new instance of Tart.
+
+### tart.create(behavior, [state])
+
+  * `behavior`: _Function_ `function (message, context) {}` Actor behavior to invoke every time an actor receives a message.
+    * `message`: _Any_ Any message.
+    * `context`: _Object_
+      * `self`: _Function_ Reference to the actor.
+      * `behavior`: _Function_ The behavior of the actor. To change actor behavior (a "become") assign a new function to this parameter.
+      * `state`: _Object_ _**CAUTION: may be removed in future versions pending experiment results**_ Actor state that persists through the lifetime of the actor.
+      * `sponsor`: _Object_ Sponsor of the actor. To create a new actor call `context.sponsor.create()`.
+  * `state`: _Object_ _(Default: undefined)_ _**CAUTION: may be removed in future versions pending experiment results**_ Initial actor state that will be passed in `context.state` to the `behavior` when the actor receives a message.
+  * Return: _Function_ `function (message) {}` Actor reference that can be invoked to send the actor a message.
+
+Creates a new actor with the specified behavior.
 
 ## Sources
 

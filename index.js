@@ -30,65 +30,39 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = module.exports = function Tart () {
-    var self = this;
+var Tart = module.exports = function Tart () {};
 
-    self.sponsor = Object.freeze({
-        createActor: function () { return self.createActor.apply(self, arguments); },
-        createValue: function () { return self.createValue.apply(self, arguments); },
-        createSerial: function () { return self.createSerial.apply(self, arguments); },
-        fail: function () { self.fail.apply(self, arguments); },
-        send: function () { self.send.apply(self, arguments); }
-    });
-
-    Object.freeze(self);
-};
-
-Tart.prototype.createActor = function createActor (behavior) {
-    var ref = function (sponsor, message) {
-        setImmediate(behavior, 
-            {sponsor: sponsor, target: ref, message: message});
+/*
+  * `behavior`: _Function_ `function (message, context) {}` Actor behavior to 
+      invoke every time an actor receives a message.
+    * `message`: _Any_ Any message.
+    * `context`: _Object_
+      * `self`: _Function_ Reference to the actor.
+      * `behavior`: _Function_ The behavior of the actor. To change actor 
+          behavior (a "become") assign a new function to this parameter.
+      * `state`: _Object_ _**CAUTION: may be removed in future versions pending 
+          experiment results**_ Actor state that persists through the lifetime 
+          of the actor.
+      * `sponsor`: _Object_ Sponsor of the actor. To create a new actor call 
+          `context.sponsor.create()`.
+  * `state`: _Object_ _(Default: undefined)_ _**CAUTION: may be removed in 
+      future versions pending experiment results**_ Initial actor state that 
+      will be passed in `context.state` to the `behavior` when the actor 
+      receives a message.
+  * Return: _Function_ `function (message) {}` Actor reference that can be 
+      invoked to send the actor a message.
+*/
+Tart.prototype.create = function create (behavior, state) {
+    var actor = function send (message) {
+        setImmediate(function deliver() {
+            context.behavior(message, context);
+        });
     };
-    return Object.freeze(ref);
-};
-
-Tart.prototype.createValue = function createValue (behavior, data) {
-    data = data || {};
-    var ref = function (sponsor, message) {
-        setImmediate(behavior,
-            {sponsor: sponsor, target: ref, data: data, message: message});
+    var context = {
+        self: actor,
+        behavior: behavior,
+        state: state,
+        sponsor: this
     };
-    return Object.freeze(ref);
+    return actor;
 };
-
-Tart.prototype.createSerial = function createSerial (initialBehavior, data) {
-    data = data || {};
-    var serial = {
-        currentBehavior: initialBehavior,
-        nextBehavior: initialBehavior
-    };
-    var become = function (behavior) {
-        serial.nextBehavior = behavior;
-    };
-    var ref = function (sponsor, message) {
-        setImmediate(actSerial,
-            {sponsor: sponsor, target: ref, data: data, message: message, 
-                serial: serial, become: become});
-    };
-    return Object.freeze(ref);
-};
-
-Tart.prototype.send = function send (target, message) {
-    var self = this;
-    target(self.sponsor, message);
-};
-
-var actSerial = function actSerial (event) {
-    var serial = event.serial;
-    serial.nextBehavior = serial.currentBehavior;
-    serial.currentBehavior({sponsor: event.sponsor, target: event.target,
-        data: event.data, message: event.message, become: event.become});
-    serial.currentBehavior = serial.nextBehavior;
-};
-
-Object.freeze(Tart);

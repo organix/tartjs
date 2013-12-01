@@ -38,31 +38,30 @@ test['one shot actor should forward the first message and become sink afterwards
     test.expect(2);
     var config = new Tart();
 
-    var sinkBeh = function sinkBeh (event) { 
-        test.equal(event.message, 'second');
-        event.sponsor.send(testComplete, 'sinkBehDone');
+    var sinkBeh = function sinkBeh (message) {
+        test.equal(message, 'second');
+        testComplete('sinkBehDone');
+    };  
+
+    var oneShotBeh = function oneShotBeh (message, context) {
+        context.state.destination(message);
+        context.behavior = sinkBeh;
     };
 
-    var oneShotBeh = function oneShotBeh (event) {
-        var destination = event.data && event.data.destination;
-        event.sponsor.send(destination, event.message);
-        event.become(sinkBeh);
-    };
-
-    var destination = config.createActor(function (event) {
-        test.equal(event.message, 'first');
-        event.sponsor.send(testComplete, 'destinationDone');
+    var destination = config.create(function (message) {
+        test.equal(message, 'first');
+        testComplete('destinationDone');
     });
 
-    var oneShot = config.createSerial(oneShotBeh, {destination: destination});
+    var oneShot = config.create(oneShotBeh, {destination: destination});
 
-    var testComplete = config.createValue(function (event) {
-        event.data[event.message] = true;
-        if (event.data.sinkBehDone && event.data.destinationDone) {
+    var testComplete = config.create(function (message, context) {
+        context.state[message] = true;
+        if (context.state.sinkBehDone && context.state.destinationDone) {
             test.done();
         }
     }, {sinkBehDone: false, destinationDone: false});
 
-    config.send(oneShot, 'first');
-    config.send(oneShot, 'second');
+    oneShot('first');
+    oneShot('second');
 };

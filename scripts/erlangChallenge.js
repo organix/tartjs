@@ -44,47 +44,42 @@ var Tart = require('../index.js');
 
 var config = new Tart();
 
-var ringMemberBeh = function ringMemberBeh (event) {
-    if (event.message.name == 'build') {
-        if (event.message.counter > 0) {
-            event.data.next = event.sponsor.createValue(ringMemberBeh);
-            event.message.counter--;
-            event.sponsor.send(event.data.next, event.message);
-        } else {
-            event.data.next = event.message.seed;
-            event.sponsor.send(event.data.next, 'start');
-        }
-    } else {
-        // forward to next
-        event.sponsor.send(event.data.next, event.message);
-    }
+var ringLink = function ringLink(next) {
+    return function ringLinkBeh(n, ctx) {
+        next(n);
+    };
 };
 
-var seed = config.createValue(function (event) {
-    if (event.message == 'build') {
-        event.data.next = event.sponsor.createValue(ringMemberBeh);
-        event.sponsor.send(event.data.next, {
-            name: 'build',
-            counter: M - 1,
-            seed: event.target
-        });
-    } else if (event.message == 'start') {
-        constructionEndTime = process.hrtime();
-        console.log('constructed ' + M + ' actor ring');
-        event.sponsor.send(event.data.next, N);
-    } else if (event.message > 0) {
+var ringLast = function ringLast(first) {
+    return function ringLastBeh(n, ctx) {
         loopCompletionTimes.push(process.hrtime());
-        // keep sending
-        process.stdout.write('.');
-        event.message--;
-        event.sponsor.send(event.data.next, event.message);
-    } else {
-        loopCompletionTimes.push(process.hrtime());
-        reportProcessTimes();
-    }
-});
+        if (--n > 0) {
+            process.stdout.write('.');
+            first(n);
+        } else {
+            ctx.behavior = function sinkBeh(msg) {};
+            process.stdout.write('.');
+            reportProcessTimes();
+        }
+    };
+};
 
-var reportProcessTimes = function () {
+var ringBuilder = function ringBuilder(m) {
+    return function ringBuilderBeh(msg, ctx) {
+        if (--m > 0) {
+            var next = ctx.sponsor.create(ringBuilder(m));
+            next(msg);
+            ctx.behavior = ringLink(next);
+        } else {
+            constructionEndTime = process.hrtime();
+            process.stdout.write('sending ' + msg.n + ' messages\n');
+            msg.first(msg.n);
+            ctx.behavior = ringLast(msg.first);
+        }
+    };
+};
+
+var reportProcessTimes = function reportProcessTimes() {
     process.stdout.write('\ndone\n');
     var constructionTime = [];
     constructionTime[0] = constructionEndTime[0] - constructionStartTime[0];
@@ -116,5 +111,7 @@ var reportProcessTimes = function () {
     console.log(avgInterval[0] * 1e9 + avgInterval[1]);        
 };
 
+console.log('starting ' + M + ' actor ring');
 constructionStartTime = process.hrtime();
-config.send(seed, 'build');
+var ring = config.create(ringBuilder(M));
+ring({first: ring, n: N});
