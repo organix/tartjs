@@ -30,7 +30,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = module.exports = function Tart () {};
+var Tart = module.exports = function Tart() {};
 
 /*
   * `behavior`: _Function_ `function (message, context) {}` Actor behavior to 
@@ -52,8 +52,8 @@ var Tart = module.exports = function Tart () {};
   * Return: _Function_ `function (message) {}` Actor reference that can be 
       invoked to send the actor a message.
 */
-Tart.prototype.create = function create (behavior, state) {
-    var actor = function send (message) {
+Tart.prototype.create = function create(behavior, state) {
+    var actor = function send(message) {
         setImmediate(function deliver() {
             context.behavior(message, context);
         });
