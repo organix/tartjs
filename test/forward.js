@@ -37,14 +37,14 @@ var test = module.exports = {};
 test['forward actor should pass the message to specified forwarder'] = function (test) {
     test.expect(1);
     var config = new Tart();
-    var sinkActor = config.create(function (event) {
-        test.equal(event.message, 'foo');
+    var sinkActor = config.create(function (msg, ctx) {
+        test.equal(msg, 'foo');
         test.done();
     });
     var forwardActor = config.create((function () {
         var destination = sinkActor;
-        return function (event) {
-            sinkActor(event.message);
+        return function (msg, ctx) {
+            sinkActor(msg);
         };
     })());
     forwardActor('foo');

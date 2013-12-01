@@ -45,49 +45,45 @@ var Tart = require('../index.js');
 var config = new Tart();
 
 var ring_link = function ring_link(next) {
-    return function ring_link_beh(event) {
-        var n = event.message;
+    return function ring_link_beh(n, ctx) {
         next(n);
     };
 };
 
 var ring_last = function ring_last(first) {
-    return function ring_last_beh(event) {
-        var n = event.message;
+    return function ring_last_beh(n, ctx) {
         loopCompletionTimes.push(process.hrtime());
         if (--n > 0) {
             process.stdout.write('.');
             first(n);
         } else {
-            event.context.behavior = function sink_beh(msg) {};
+            ctx.behavior = function sink_beh(msg) {};
             reportProcessTimes();
         }
     };
 };
 
 var ring_builder = function ring_builder(m) {
-    return function ring_builder_beh(event) {
+    return function ring_builder_beh(msg, ctx) {
         if (--m > 0) {
-            var next = event.context.sponsor.create(ring_builder(m));
-            next(event.message);
-            event.context.behavior = ring_link(next);
+            var next = ctx.sponsor.create(ring_builder(m));
+            next(msg);
+            ctx.behavior = ring_link(next);
         } else {
-            var first = event.message.first;
-            var n = event.message.n;
             constructionEndTime = process.hrtime();
-            process.stdout.write('sending ' + n + ' messages\n');
-            first(n);
-            event.context.behavior = ring_last(first);
+            process.stdout.write('sending ' + msg.n + ' messages\n');
+            msg.first(msg.n);
+            ctx.behavior = ring_last(msg.first);
         }
     };
 };
 
 var ringMemberBeh = function () {
     var next = null;
-    return function (msg) {
+    return function (msg, ctx) {
         if (msg.name == 'build') {
             if (msg.counter > 0) {
-                next = this.event.context.sponsor.create(ringMemberBeh());
+                next = ctx.sponsor.create(ringMemberBeh());
                 msg.counter--;
                 next(msg);
             } else {
@@ -102,10 +98,10 @@ var ringMemberBeh = function () {
 
 var seedBeh = function () {
     var next = null;
-    return function (msg) {
+    return function (msg, ctx) {
         if (msg == 'build') {
-            next = this.event.context.sponsor.create(ringMemberBeh());
-            next({name: 'build', counter: M - 1, seed: this});
+            next = ctx.sponsor.create(ringMemberBeh());
+            next({name: 'build', counter: M - 1, seed: ctx.self});
         } else if (msg == 'start') {
             constructionEndTime = process.hrtime();
             console.log('constructed ' + M + ' actor ring');
