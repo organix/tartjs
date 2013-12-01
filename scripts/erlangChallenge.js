@@ -80,7 +80,7 @@ var ring_builder = function ring_builder(m) {
 
 var ringMemberBeh = function () {
     var next = null;
-    return function (msg, ctx) {
+    return function(msg, ctx) {
         if (msg.name == 'build') {
             if (msg.counter > 0) {
                 next = ctx.sponsor.create(ringMemberBeh());
@@ -98,7 +98,7 @@ var ringMemberBeh = function () {
 
 var seedBeh = function () {
     var next = null;
-    return function (msg, ctx) {
+    return function(msg, ctx) {
         if (msg == 'build') {
             next = ctx.sponsor.create(ringMemberBeh());
             next({name: 'build', counter: M - 1, seed: ctx.self});

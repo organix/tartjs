@@ -30,12 +30,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = module.exports = function Tart () {
+var Tart = module.exports = function Tart() {
     Object.freeze(this);
 };
 Tart.prototype.create = function create(behavior) {
     var actor = function send(message) {
-        setImmediate(deliver, message, context);
+        setImmediate(function deliver() {
+            context.behavior(message, context);
+        });
     };
     var context = {
         self: actor,
@@ -43,8 +45,4 @@ Tart.prototype.create = function create(behavior) {
         sponsor: this
     };
     return actor;
-};
-
-var deliver = function deliver(message, context) {
-    context.behavior(message, context);
 };
