@@ -1,6 +1,6 @@
 {
   "name": "tart",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Tiny Actor Run-Time in JavaScript",
   "scripts": {
     "erlangChallenge": "node scripts/erlangChallenge.js",
