@@ -4,6 +4,7 @@
   "description": "Tiny Actor Run-Time in JavaScript",
   "scripts": {
     "erlangChallenge": "node scripts/erlangChallenge.js",
+    "observer": "node scripts/observer.js",
     "test": "node scripts/test.js"
   },
   "main": "index.js",
