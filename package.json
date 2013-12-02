@@ -5,6 +5,7 @@
   "scripts": {
     "erlangChallenge": "node scripts/erlangChallenge.js",
     "observer": "node scripts/observer.js",
+    "forkJoin": "node scripts/forkJoin.js",
     "test": "node scripts/test.js"
   },
   "main": "index.js",

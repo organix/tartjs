@@ -30,39 +30,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var constructionStartTime;
-var constructionEndTime;
-var loopCompletionTimes = [];
-
 var Tart = require('../index.js');
 
 var config = new Tart();
 
 var subject = function subject(observers) {
-	observers = observers || [];
-	return function subject_beh(msg, ctx) {
-		if (msg.action === 'notify') {
-			// send event to each observer
-			observers.forEach(function (observer) {
-				observer(msg.event);
-			});
-		} else if (msg.action === 'attach') {
-			// attach new observer
-			observers.push(msg.observer);
-		} else if (msg.action === 'detach') {
-			// detach first matching observer
-			var i = observers.indexOf(msg.observer);
-			observers.splice(i, 1);
-		}
-	};
+    observers = observers || [];
+    return function subject_beh(msg, ctx) {
+        if (msg.action === 'notify') {
+            // send event to each observer
+            observers.forEach(function (observer) {
+                observer(msg.event);
+            });
+        } else if (msg.action === 'attach') {
+            // attach new observer
+            observers.push(msg.observer);
+        } else if (msg.action === 'detach') {
+            // detach first matching observer
+            var i = observers.indexOf(msg.observer);
+            observers.splice(i, 1);
+        }
+    };
 };
 
 var observer = function observer(label) {
-	return function observer_beh(msg, ctx) {
-		console.log(label, msg);
-//		console.log(label, msg, ctx);
-//		console.log(label, msg, this);
-	};
+    return function observer_beh(msg, ctx) {
+        console.log(label, msg);
+//      console.log(label, msg, ctx);
+//      console.log(label, msg, this);
+    };
 };
 
 var obsA = config.create(observer('<A>'));
