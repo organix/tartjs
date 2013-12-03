@@ -30,13 +30,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
+/*
+  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to 
+        invoke every time an actor receives a message.
+      * `message`: _Any_ Any message.
+*/
 module.exports.sponsor = function () {
     /*
       * `behavior`: _Function_ `function (message) {}` Actor behavior to 
           invoke every time an actor receives a message.
         * `message`: _Any_ Any message.
       * Return: _Function_ `function (message) {}` Actor reference that can be 
-          invoked to send the actor a message.                    
+          invoked to send the actor a message.        
+        * `message`: _Any_ Any message.            
     */
     var config = function create(behavior) {
         /*
