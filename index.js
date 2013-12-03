@@ -34,7 +34,11 @@ module.exports.sponsor = function () {
     var config = function create(behavior) {
         var actor = function send(message) {
             setImmediate(function deliver() {
-                context.behavior(message);
+                try {
+                    context.behavior(message);
+                } catch (ex) {
+                    console.log('FAIL!', ex);
+                }
             });
         };
         var context = {
