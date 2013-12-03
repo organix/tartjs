@@ -30,18 +30,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = module.exports = function Tart() {};
-Tart.prototype.create = function create(behavior, state) {
-    var actor = function send(message) {
-        setImmediate(function deliver() {
-            context.behavior(message, context);
-        });
-    };
-    var context = {
-        self: actor,
-        behavior: behavior,
-        state: state,
-        sponsor: this
-    };
-    return actor;
+module.exports.sponsor = function () {
+	var config = function create(behavior) {
+		var actor = function send(message) {
+			setImmediate(function deliver() {
+				context.behavior(message);
+			});
+		};
+		var context = {
+			self: actor,
+			behavior: behavior,
+			sponsor: config
+		};
+		return actor;
+	};
+	return config;
 };

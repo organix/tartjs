@@ -61,6 +61,10 @@ var observer = function observer(label) {
     };
 };
 
+/*
+    How about a subject that returns separate capabilities?
+*/
+
 var obsA = config.create(observer('<A>'));
 var obsB = config.create(observer('<B>'));
 //var obsC = config.create(observer('<C>'));

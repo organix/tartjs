@@ -58,6 +58,10 @@ var fork = function fork(customer, serviceList) {
     };
 };
 
+/*
+    Consider a separate actor to countdown to completion.
+*/
+
 var service = function service(label) {
     return function service_beh(req, ctx) {
         req.customer({ label:label, input:req.input });
