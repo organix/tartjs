@@ -30,23 +30,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
 var test = module.exports = {};
 
 test['one shot actor should forward the first message and become sink afterwards'] = function (test) {
     test.expect(2);
-    var config = new Tart();
+    var sponsor = tart.sponsor();
 
-    var destination = config.create(function (msg, ctx) {
+    var destination = sponsor(function (msg) {
         test.equal(msg, 'first');
         testComplete('destinationDone');
     });
 
-    var oneShot = config.create((function () {
+    var oneShot = sponsor((function () {
         var dest = destination;
-        return function (msg, ctx) {
-            ctx.behavior = function (msg, ctx) {
+        return function (msg) {
+            this.behavior = function (msg) {
                 test.equal(msg, 'second');
                 testComplete('sinkBehDone');
             };
@@ -54,10 +54,10 @@ test['one shot actor should forward the first message and become sink afterwards
         };
     })());
 
-    var testComplete = config.create((function () {
+    var testComplete = sponsor((function () {
         var sinkBehDone = false;
         var destinationDone = false;
-        return function (msg, ctx) {
+        return function (msg) {
             if (msg == 'sinkBehDone') {
                 sinkBehDone = true;
             } else if (msg == 'destinationDone') {

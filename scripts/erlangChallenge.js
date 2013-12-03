@@ -79,11 +79,11 @@ var ring_builder = function ring_builder(m) {
 };
 
 var ringMemberBeh = function(state) {
-	state = state || { next:null };
-    return function(msg, ctx) {
+    state = state || { next:null };
+    return function(msg) {
         if (msg.name == 'build') {
             if (msg.counter > 0) {
-                state.next = ctx.sponsor.create(ringMemberBeh());
+                state.next = this.sponsor(ringMemberBeh());
                 msg.counter--;
                 state.next(msg);
             } else {
@@ -97,11 +97,11 @@ var ringMemberBeh = function(state) {
 };
 
 var seedBeh = function(state) {
-	state = state || { next:null };
-    return function(msg, ctx) {
+    state = state || { next:null };
+    return function(msg) {
         if (msg == 'build') {
-            state.next = ctx.sponsor.create(ringMemberBeh());
-            state.next({name: 'build', counter: M - 1, seed: ctx.self});
+            state.next = this.sponsor(ringMemberBeh());
+            state.next({name: 'build', counter: M - 1, seed: this.self});
         } else if (msg == 'start') {
             constructionEndTime = process.hrtime();
             console.log('constructed ' + M + ' actor ring');
@@ -153,7 +153,7 @@ var reportProcessTimes = function () {
 
 console.log('starting ' + M + ' actor ring');
 constructionStartTime = process.hrtime();
-//var seed = config.create(seedBeh());
+//var seed = sponsor(seedBeh());
 //seed('build');
 var ring = sponsor(ring_builder(M));
 ring({ first:ring, n:N });

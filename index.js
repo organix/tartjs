@@ -31,18 +31,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 "use strict";
 
 module.exports.sponsor = function () {
-	var config = function create(behavior) {
-		var actor = function send(message) {
-			setImmediate(function deliver() {
-				context.behavior(message);
-			});
-		};
-		var context = {
-			self: actor,
-			behavior: behavior,
-			sponsor: config
-		};
-		return actor;
-	};
-	return config;
+    var config = function create(behavior) {
+        var actor = function send(message) {
+            setImmediate(function deliver() {
+                context.behavior(message);
+            });
+        };
+        var context = {
+            self: actor,
+            behavior: behavior,
+            sponsor: config
+        };
+        return actor;
+    };
+    return config;
 };

@@ -30,17 +30,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
 var test = module.exports = {};
 
 test['sink behavior should receive message'] = function (test) {
     test.expect(1);
-    var config = new Tart();
+    var sponsor = tart.sponsor();
 
-    var sinkActor = config.create(function (msg, ctx) {
+    var sinkActor = sponsor(function (msg) {
         test.equal(msg, 'foo'); 
-        test.done();        
+        test.done();
     });
 
     sinkActor('foo');
