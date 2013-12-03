@@ -43,31 +43,26 @@ test['one shot actor should forward the first message and become sink afterwards
         testComplete('destinationDone');
     });
 
-    var oneShot = sponsor((function () {
-        var dest = destination;
-        return function (msg) {
-            this.behavior = function (msg) {
-                test.equal(msg, 'second');
-                testComplete('sinkBehDone');
-            };
-            dest(msg);
+    var oneShot = sponsor(function (msg) {
+        this.behavior = function (msg) {
+            test.equal(msg, 'second');
+            testComplete('sinkBehDone');
         };
-    })());
+        destination(msg);
+    });
 
-    var testComplete = sponsor((function () {
-        var sinkBehDone = false;
-        var destinationDone = false;
-        return function (msg) {
-            if (msg == 'sinkBehDone') {
-                sinkBehDone = true;
-            } else if (msg == 'destinationDone') {
-                destinationDone = true;
-            }
-            if (sinkBehDone && destinationDone) {
-                test.done();
-            }
-        };
-    })());
+    var sinkBehDone = false;
+    var destinationDone = false;
+    var testComplete = function(key) {
+        if (key == 'sinkBehDone') {
+            sinkBehDone = true;
+        } else if (key == 'destinationDone') {
+            destinationDone = true;
+        }
+        if (sinkBehDone && destinationDone) {
+            test.done();
+        }
+    };
 
     oneShot('first');
     oneShot('second');
