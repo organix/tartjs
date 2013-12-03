@@ -30,41 +30,40 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
 var test = module.exports = {};
 
 test["serial actor's latest behavior should be the one handling the next message"] = function (test) {
     test.expect(9);
-    var config = new Tart();
+    var sponsor = tart.sponsor();
 
-    var firstBeh = function firstBeh (message, context) {
-        context.behavior = secondBeh;
-        test.equal(message, 'foo');
-        test.ok(!context.state.first);
-        context.state.first = true;
-        context.self(message);
-        context.self(message);
+    var serial = function (first, second, third) {
+        var firstBeh = function firstBeh (message) {
+            this.behavior = secondBeh;
+            test.equal(message, 'foo');
+            test.ok(!first);
+            first = true;
+            this.self(message);
+            this.self(message);
+        };
+        var secondBeh = function secondBeh (message) {
+            this.behavior = thirdBeh;
+            test.equal(message, 'foo');
+            test.ok(first);
+            test.ok(!second);
+            second = true;
+        };        
+        var thirdBeh = function thirdBeh (message) {
+            test.equal(message, 'foo');
+            test.ok(first);
+            test.ok(second);
+            test.ok(!third);
+            test.done();
+        };        
+        return firstBeh;
     };
 
-    var secondBeh = function secondBeh (message, context) {
-        context.behavior = thirdBeh;
-        test.equal(message, 'foo');
-        test.ok(context.state.first);
-        test.ok(!context.state.second);
-        context.state.second = true;
-    };
-
-    var thirdBeh = function thirdBeh (message, context) {
-        test.equal(message, 'foo');
-        test.ok(context.state.first);
-        test.ok(context.state.second);
-        test.ok(!context.state.third);
-        test.done();
-    };
-
-    var serial = config.create(firstBeh, 
-            {first: false, second: false, third: false});
-
-    serial('foo');
+    var serialActor = sponsor(serial(false, false, false));
+    serialActor('foo');
 };

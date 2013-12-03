@@ -22,7 +22,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
 
 `tart` also happens to fit into a tweet :D
 
-    function C(){}.prototype.a=function (b,x){var a=function (m){setImmediate(function (){c.b(m, c);});};var c={a:a,b:b,x:x,s:this};return a;};
+    function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c}
 
 ## Usage
 
@@ -31,12 +31,12 @@ To run the below example, run:
     npm run examples-readme
 
 ```javascript
-var Tart = require('tart');
+var tart = require('tart');
 
-var config = new Tart();
+var sponsor = tart.sponsor();
 
 // create an actor that has no state
-var statelessActor = config.create(function (message) {
+var statelessActor = sponsor(function (message) {
     console.log('got message', message); 
 });
 
@@ -48,37 +48,37 @@ var statefulActorBeh = function (state) {
     };
 };
 
-var statefulActor = config.create(statefulActorBeh({some: 'state'}));
+var statefulActor = sponsor(statefulActorBeh({some: 'state'}));
 
 // create an actor with state that changes behavior
 var flipFlop = function (state) {
-    var firstBeh = function (message, context) {
+    var firstBeh = function (message) {
         console.log('firstBeh got message', message);
         console.log('actor state', state);
-        context.behavior = secondBeh;
+        this.behavior = secondBeh;
     };
-    var secondBeh = function (message, context) {
+    var secondBeh = function (message) {
         console.log('secondBeh got message', message);
         console.log('actor state', state);
-        context.behavior = firstBeh;
+        this.behavior = firstBeh;
     };
     return firstBeh;
 };
 
-var serialActor = config.create(flipFlop({some: 'state'}));
+var serialActor = sponsor(flipFlop({some: 'state'}));
 
 // create an actor that creates a chain of actors
 var chainActorBeh = function (count) {
-    return function (message, context) {
+    return function (message) {
         console.log('chain actor', count);
         if (--count >= 0) {
-            var next = context.sponsor.create(chainActorBeh(count));
+            var next = this.sponsor(chainActorBeh(count));
             next(message);
         }
     }; 
 };
 
-var chainActor = config.create(chainActorBeh(10));
+var chainActor = sponsor(chainActorBeh(10));
 
 // send messages to the actors
 statelessActor('some message');
@@ -151,26 +151,65 @@ For rings of sizes larger than 4 Million you may need to expand memory available
 
 **Public API**
 
-  * [new Tart()](#new-tart)
-  * [tart.create(behavior, \[state\])](#tartcreatebehavior-state)
+  * [tart.sponsor()](#tartsponsor)
+  * [sponsor(behavior)](#sponsorbehavior)
+  * [actor(message)](#actormessage)
 
-### new Tart()
+### tart.sponsor()
 
-Creates a new instance of Tart.
+  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
-### tart.create(behavior, [state])
+Creates a sponsor capability to create new actors with.
 
-  * `behavior`: _Function_ `function (message, context) {}` Actor behavior to invoke every time an actor receives a message.
+```javascript
+var tart = require('tart');
+var sponsor = tart.sponsor();
+```
+
+### sponsor(behavior)
+
+  * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
     * `message`: _Any_ Any message.
-    * `context`: _Object_
-      * `self`: _Function_ Reference to the actor.
-      * `behavior`: _Function_ The behavior of the actor. To change actor behavior (a "become") assign a new function to this parameter.
-      * `state`: _Object_ _**CAUTION: may be removed in future versions pending experiment results**_ Actor state that persists through the lifetime of the actor.
-      * `sponsor`: _Object_ Sponsor of the actor. To create a new actor call `context.sponsor.create()`.
-  * `state`: _Object_ _(Default: undefined)_ _**CAUTION: may be removed in future versions pending experiment results**_ Initial actor state that will be passed in `context.state` to the `behavior` when the actor receives a message.
-  * Return: _Function_ `function (message) {}` Actor reference that can be invoked to send the actor a message.
+  * Return: _Function_ `function (message) {}` Actor reference in form of a capability that can be invoked to send the actor a message.
+    * `message`: _Any_ Any message.
 
-Creates a new actor with the specified behavior.
+Creates a new actor and returns the actor reference in form of a capability to send that actor a message.
+
+```javascript
+var tart = require('tart');
+var sponsor = tart.sponsor();
+var actor = sponsor(function (message) {
+    console.log('got message', message); 
+    console.log(this.self);
+    console.log(this.behavior);
+    console.log(this.sponsor);
+});
+```
+
+When the `behavior` is invoked upon the receipt of a message, it's `this` will be bound with the following:
+
+  * `this.self`: _Function_ `function (message) {}` Reference to the actor that is executing the `behavior` (in form of a capability that can be invoked to send the actor a message).
+    * `message`: _Any_ Any message.
+  * `this.behavior`: _Function_ `function (message) {}` The behavior of the actor. To change actor behavior (a "become" operation) assign a new function to this parameter.
+    * `message`: _Any_ Any message.
+  * `this.sponsor`: _Function_ `function (behavior) {}` A capability to create new actors. To create a new actor call `this.sponsor(behavior)`
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
+      * `message`: _Any_ Any message.
+
+### actor(message)
+
+  * `message`: _Any_ Any message.
+
+Asynchronously sends the `message` to the `actor`.
+
+```javascript
+var tart = require('tart');
+var sponsor = tart.sponsor();
+var actor = sponsor(function behavior(message) {
+    console.log('got message', message);
+});
+actor('hello actor world');
+```
 
 ## Sources
 
