@@ -40,24 +40,24 @@ var constructionStartTime;
 var constructionEndTime;
 var loopCompletionTimes = [];
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
-var config = new Tart();
+var sponsor = tart.sponsor();
 
 var ringLink = function ringLink(next) {
-    return function ringLinkBeh(n, ctx) {
+    return function ringLinkBeh(n) {
         next(n);
     };
 };
 
 var ringLast = function ringLast(first) {
-    return function ringLastBeh(n, ctx) {
+    return function ringLastBeh(n) {
         loopCompletionTimes.push(process.hrtime());
         if (--n > 0) {
             process.stdout.write('.');
             first(n);
         } else {
-            ctx.behavior = function sinkBeh(msg) {};
+            this.behavior = function sinkBeh(msg) {};
             process.stdout.write('.');
             reportProcessTimes();
         }
@@ -65,16 +65,16 @@ var ringLast = function ringLast(first) {
 };
 
 var ringBuilder = function ringBuilder(m) {
-    return function ringBuilderBeh(msg, ctx) {
+    return function ringBuilderBeh(msg) {
         if (--m > 0) {
-            var next = ctx.sponsor.create(ringBuilder(m));
+            var next = this.sponsor(ringBuilder(m));
             next(msg);
-            ctx.behavior = ringLink(next);
+            this.behavior = ringLink(next);
         } else {
             constructionEndTime = process.hrtime();
             process.stdout.write('sending ' + msg.n + ' messages\n');
             msg.first(msg.n);
-            ctx.behavior = ringLast(msg.first);
+            this.behavior = ringLast(msg.first);
         }
     };
 };
@@ -113,5 +113,5 @@ var reportProcessTimes = function reportProcessTimes() {
 
 console.log('starting ' + M + ' actor ring');
 constructionStartTime = process.hrtime();
-var ring = config.create(ringBuilder(M));
+var ring = sponsor(ringBuilder(M));
 ring({first: ring, n: N});

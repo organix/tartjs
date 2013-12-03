@@ -30,38 +30,45 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
 var test = module.exports = {};
 
 test['one shot actor should forward the first message and become sink afterwards'] = function (test) {
     test.expect(2);
-    var config = new Tart();
+    var sponsor = tart.sponsor();
 
     var sinkBeh = function sinkBeh (message) {
         test.equal(message, 'second');
         testComplete('sinkBehDone');
     };  
 
-    var oneShotBeh = function oneShotBeh (message, context) {
-        context.state.destination(message);
-        context.behavior = sinkBeh;
+    var oneShot = function (destination) {
+        return function oneShotBeh(message) {
+            destination(message);
+            this.behavior = sinkBeh;
+        };
     };
 
-    var destination = config.create(function (message) {
+    var destination = sponsor(function (message) {
         test.equal(message, 'first');
         testComplete('destinationDone');
     });
 
-    var oneShot = config.create(oneShotBeh, {destination: destination});
+    var oneShotActor = sponsor(oneShot(destination));
 
-    var testComplete = config.create(function (message, context) {
-        context.state[message] = true;
-        if (context.state.sinkBehDone && context.state.destinationDone) {
+    var testStatus = {
+        sinkBehDone: false,
+        destinationDone: false
+    };
+
+    var testComplete = sponsor(function (message) {
+        testStatus[message] = true;
+        if (testStatus.sinkBehDone && testStatus.destinationDone) {
             test.done();
         }
-    }, {sinkBehDone: false, destinationDone: false});
+    });
 
-    oneShot('first');
-    oneShot('second');
+    oneShotActor('first');
+    oneShotActor('second');
 };

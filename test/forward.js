@@ -30,22 +30,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
 var test = module.exports = {};
 
 test['forward actor should pass the message to specified forwarder'] = function (test) {
     test.expect(1);
-    var config = new Tart ();
+    var sponsor = tart.sponsor();
 
-    var sinkActor = config.create(function (message) {
+    var sinkActor = sponsor(function (message) {
         test.equal(message, 'foo');
         test.done();
     });
 
-    var forwardActor = config.create(function (message, context) {
-        context.state.destination(message);
-    }, {destination: sinkActor});
+    var forwardActor = sponsor(function (message, context) {
+        sinkActor(message);
+    });
 
     forwardActor('foo');
 };

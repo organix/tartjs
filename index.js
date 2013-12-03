@@ -30,39 +30,29 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = module.exports = function Tart() {};
-
-/*
-  * `behavior`: _Function_ `function (message, context) {}` Actor behavior to 
-      invoke every time an actor receives a message.
-    * `message`: _Any_ Any message.
-    * `context`: _Object_
-      * `self`: _Function_ Reference to the actor.
-      * `behavior`: _Function_ The behavior of the actor. To change actor 
-          behavior (a "become") assign a new function to this parameter.
-      * `state`: _Object_ _**CAUTION: may be removed in future versions pending 
-          experiment results**_ Actor state that persists through the lifetime 
-          of the actor.
-      * `sponsor`: _Object_ Sponsor of the actor. To create a new actor call 
-          `context.sponsor.create()`.
-  * `state`: _Object_ _(Default: undefined)_ _**CAUTION: may be removed in 
-      future versions pending experiment results**_ Initial actor state that 
-      will be passed in `context.state` to the `behavior` when the actor 
-      receives a message.
-  * Return: _Function_ `function (message) {}` Actor reference that can be 
-      invoked to send the actor a message.
-*/
-Tart.prototype.create = function create(behavior, state) {
-    var actor = function send(message) {
-        setImmediate(function deliver() {
-            context.behavior(message, context);
-        });
+module.exports.sponsor = function () {
+    /*
+      * `behavior`: _Function_ `function (message) {}` Actor behavior to 
+          invoke every time an actor receives a message.
+        * `message`: _Any_ Any message.
+      * Return: _Function_ `function (message) {}` Actor reference that can be 
+          invoked to send the actor a message.                    
+    */
+    var config = function create(behavior) {
+        /*
+          * `message`: _Any_ Any message.
+        */
+        var actor = function send(message) {
+            setImmediate(function deliver() {
+                context.behavior(message);
+            });
+        };
+        var context = {
+            self: actor,
+            behavior: behavior,
+            sponsor: config
+        };
+        return actor;
     };
-    var context = {
-        self: actor,
-        behavior: behavior,
-        state: state,
-        sponsor: this
-    };
-    return actor;
+    return config;
 };

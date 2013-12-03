@@ -1,9 +1,9 @@
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
-var config = new Tart();
+var sponsor = tart.sponsor();
 
 // create an actor that has no state
-var statelessActor = config.create(function (message) {
+var statelessActor = sponsor(function (message) {
     console.log('got message', message); 
 });
 
@@ -15,37 +15,37 @@ var statefulActorBeh = function (state) {
     };
 };
 
-var statefulActor = config.create(statefulActorBeh({some: 'state'}));
+var statefulActor = sponsor(statefulActorBeh({some: 'state'}));
 
 // create an actor with state that changes behavior
 var flipFlop = function (state) {
-    var firstBeh = function (message, context) {
+    var firstBeh = function (message) {
         console.log('firstBeh got message', message);
         console.log('actor state', state);
-        context.behavior = secondBeh;
+        this.behavior = secondBeh;
     };
-    var secondBeh = function (message, context) {
+    var secondBeh = function (message) {
         console.log('secondBeh got message', message);
         console.log('actor state', state);
-        context.behavior = firstBeh;
+        this.behavior = firstBeh;
     };
     return firstBeh;
 };
 
-var serialActor = config.create(flipFlop({some: 'state'}));
+var serialActor = sponsor(flipFlop({some: 'state'}));
 
 // create an actor that creates a chain of actors
 var chainActorBeh = function (count) {
-    return function (message, context) {
+    return function (message) {
         console.log('chain actor', count);
         if (--count >= 0) {
-            var next = context.sponsor.create(chainActorBeh(count));
+            var next = this.sponsor(chainActorBeh(count));
             next(message);
         }
     }; 
 };
 
-var chainActor = config.create(chainActorBeh(10));
+var chainActor = sponsor(chainActorBeh(10));
 
 // send messages to the actors
 statelessActor('some message');
