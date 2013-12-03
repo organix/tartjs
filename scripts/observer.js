@@ -30,23 +30,20 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
-var config = new Tart();
+var sponsor = tart.sponsor();
 
 var subject = function subject(observers) {
     observers = observers || [];
-    return function subject_beh(msg, ctx) {
-        if (msg.action === 'notify') {
-            // send event to each observer
+    return function subject_beh(msg) {
+        if (msg.action === 'notify') {  // notify all observers concurrently
             observers.forEach(function (observer) {
                 observer(msg.event);
             });
-        } else if (msg.action === 'attach') {
-            // attach new observer
+        } else if (msg.action === 'attach') {  // attach new observer
             observers.push(msg.observer);
-        } else if (msg.action === 'detach') {
-            // detach first matching observer
+        } else if (msg.action === 'detach') {  // detach first matching observer
             var i = observers.indexOf(msg.observer);
             observers.splice(i, 1);
         }
@@ -54,10 +51,9 @@ var subject = function subject(observers) {
 };
 
 var observer = function observer(label) {
-    return function observer_beh(msg, ctx) {
-        console.log(label, msg);
-//      console.log(label, msg, ctx);
-//      console.log(label, msg, this);
+    return function observer_beh(msg) {
+//      console.log(label, msg);
+        console.log(label, msg, this);
     };
 };
 
@@ -65,11 +61,11 @@ var observer = function observer(label) {
     How about a subject that returns separate capabilities?
 */
 
-var obsA = config.create(observer('<A>'));
-var obsB = config.create(observer('<B>'));
-//var obsC = config.create(observer('<C>'));
-var obsC = config.create(function (msg) { console.log('<C>', msg); });
-var subj = config.create(subject([obsA, obsB]));
+var obsA = sponsor(observer('<A>'));
+var obsB = sponsor(observer('<B>'));
+//var obsC = sponsor(observer('<C>'));
+var obsC = sponsor(function (msg) { console.log('<C>', msg); });
+var subj = sponsor(subject([obsA, obsB]));
 subj({ action:'notify', event:1});
 subj({ action:'attach', observer:obsC });
 subj({ action:'notify', event:2 });

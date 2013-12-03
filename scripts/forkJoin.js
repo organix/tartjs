@@ -30,50 +30,54 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var Tart = require('../index.js');
+var tart = require('../index.js');
 
-var config = new Tart();
+var sponsor = tart.sponsor();
 
 var fork = function fork(customer, serviceList) {
-    return function fork_beh(requestList, ctx) {
+    return function fork_beh(requestList) {
+        console.log('fork:', serviceList, requestList);
         var count = serviceList.length;
         if ((requestList.length != count) || (count < 1)) {
             throw new Error('bad count: ' + count);
         }
         var replyList = new Array(count);
+        var countdown = this.sponsor(function (index) {
+            console.log('countdown:', index, count);
+            if (--count < 1) {
+                customer(replyList);
+            }
+        });
         var join = function join(index) {
-            return function join_beh(reply, ctx) {
+            return function join_beh(reply) {
+                console.log('join:', index, reply);
                 replyList[index] = reply;
-                if (--count < 1) {
-                    customer(replyList);
-                }
+                countdown(index);
             };
         };
-        serviceList.forEach(function (service, index) {
-            var k_join = ctx.sponsor.create(join(index));
+        for (var index = 0; index < count; ++index) {
             var request = requestList[index];
-            request.customer = k_join;
-            service(request);
-        });
+            request.customer = this.sponsor(join(index));
+            serviceList[index](request);
+        }
     };
 };
 
-/*
-    Consider a separate actor to countdown to completion.
-*/
-
 var service = function service(label) {
-    return function service_beh(req, ctx) {
+    return function service_beh(req) {
+        console.log('service:', label, req);
         req.customer({ label:label, input:req.input });
     };
 };
 
-var svcA = config.create(service('<A>'));
-var svcB = config.create(service('<B>'));
-var svcC = config.create(service('<C>'));
+var svcA = sponsor(service('<A>'));
+var svcB = sponsor(service('<B>'));
+var svcC = sponsor(service('<C>'));
 
-var output = config.create(function (msg) { console.log('output: ', msg); });
+var output = sponsor(function (msg) {
+    console.log('output: ', msg);
+});
 
-var par = config.create(fork(output, [svcA, svcB, svcC]));
+var par = sponsor(fork(output, [svcA, svcB, svcC]));
 
 par([{ input:1 }, { input:2 }, { input:3 }]);
