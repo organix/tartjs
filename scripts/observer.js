@@ -57,17 +57,69 @@ var observer = function observer(label) {
     };
 };
 
-/*
-    How about a subject that returns separate capabilities?
-*/
-
 var obsA = sponsor(observer('<A>'));
 var obsB = sponsor(observer('<B>'));
-//var obsC = sponsor(observer('<C>'));
-var obsC = sponsor(function (msg) { console.log('<C>', msg); });
+var obsC = sponsor(observer('<C>'));
+//var obsC = sponsor(function (msg) { console.log('<C>', msg); });
 var subj = sponsor(subject([obsA, obsB]));
 subj({ action:'notify', event:1});
 subj({ action:'attach', observer:obsC });
 subj({ action:'notify', event:2 });
 subj({ action:'detach', observer:obsA });
 subj({ action:'notify', event:3 });
+
+/*
+    How about a subject that returns separate capabilities?
+    
+    WARNING: THE EXAMPLE BELOW IS _NOT_ SAFE!
+*/
+
+var subjectCaps = function (sponsor) {
+    var observers = [];
+    var notify = sponsor(function notify_beh(msg) {
+        observers.forEach(function (observer) {
+            observer(msg.event);
+        });
+        msg.customer(msg.event);  // ack
+    });
+    var attach = sponsor(function attach_beh(msg) {
+        var o = msg.observer;
+        observers.push(o);
+        var detach = this.sponsor(function detach_beh(msg) {
+            observers.splice(observers.indexOf(o), 1);
+            msg.customer(o);  // ack
+        });
+        msg.customer(detach);
+    });
+    return { notify:notify, attach:attach };
+};
+
+var obsX = sponsor(function (msg) { console.log('<X>', msg); });
+var obsY = sponsor(function (msg) { console.log('<Y>', msg); });
+var caps = subjectCaps(sponsor);
+caps.attach({
+    observer: obsX,
+    customer: sponsor(function (detachX) {
+        caps.attach({
+            observer: obsY,
+            customer: sponsor(function (detachY) {
+                caps.notify({
+                    event: 'foo',
+                    customer: sponsor(function (msg) {
+                        console.log(msg, 'DONE.');
+                    })
+                });
+                detachX({
+                    customer: sponsor(function (o) {
+                        caps.notify({
+                            event: (o === obsX),
+                            customer: sponsor(function (msg) {
+                                console.log(msg, 'DONE.');
+                            })
+                        });
+                    })
+                });
+            })
+        });
+    })
+});
