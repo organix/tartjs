@@ -51,7 +51,9 @@ module.exports.sponsor = function () {
         */
         var actor = function send(message) {
             setImmediate(function deliver() {
-                context.behavior(message);
+                try {
+                    context.behavior(message);
+                } catch (exception) {};
             });
         };
         var context = {
