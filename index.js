@@ -50,3 +50,50 @@ module.exports.sponsor = function () {
     };
     return config;
 };
+
+module.exports.tracing = function () {
+    var events = [];
+    var effect = {
+        created: [],
+        sent: events
+    };
+    var dispatch = function dispatch() {
+        var event = events.shift();
+        if (!event) {
+            return false;
+        }
+        effect = {
+            event: event,
+            created: [],
+            sent: []
+        };
+        try {
+            event.context.behavior(event.message);
+            Array.prototype.push.apply(events, effect.sent);
+        } catch (ex) {
+            effect.exception = ex;
+        }
+        return effect;
+    };
+    var config = function create(behavior) {
+        var actor = function send(message) {
+            var event = {
+                message: message,
+                context: context
+            };
+            effect.sent.push(event);
+        };
+        var context = {
+            self: actor,
+            behavior: behavior,
+            sponsor: config
+        };
+        effect.created.push(context);
+        return actor;
+    };
+    return {
+        initial: effect,
+        dispatch: dispatch,
+        sponsor: config
+    };
+};

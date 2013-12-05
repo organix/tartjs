@@ -62,7 +62,7 @@ var obsB = sponsor(observer('<B>'));
 var obsC = sponsor(observer('<C>'));
 //var obsC = sponsor(function (msg) { console.log('<C>', msg); });
 var subj = sponsor(subject([obsA, obsB]));
-subj({ action:'notify', event:1});
+subj({ action:'notify', event:1 });
 subj({ action:'attach', observer:obsC });
 subj({ action:'notify', event:2 });
 subj({ action:'detach', observer:obsA });
@@ -73,6 +73,9 @@ subj({ action:'notify', event:3 });
     
     WARNING: THE EXAMPLE BELOW IS _NOT_ SAFE!
 */
+
+var tracing = tart.tracing();
+sponsor = tracing.sponsor;
 
 var subjectCaps = function (sponsor) {
     var observers = [];
@@ -123,3 +126,9 @@ caps.attach({
         });
     })
 });
+
+var effect = tracing.initial;
+console.log("initial:", effect);
+while ((effect = tracing.dispatch()) !== false) {
+    console.log("effect:", effect);
+}
