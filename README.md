@@ -28,7 +28,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
 
 To run the below example, run:
 
-    npm run examples-readme
+    npm run readme
 
 ```javascript
 var tart = require('tart');
