@@ -68,7 +68,11 @@ module.exports.tracing = function () {
             sent: []
         };
         try {
+            var previous = event.context.behavior;
             event.context.behavior(event.message);
+            if (previous !== event.context.behavior) {
+                effect.previous = previous;
+            }
             Array.prototype.push.apply(events, effect.sent);
         } catch (ex) {
             effect.exception = ex;
