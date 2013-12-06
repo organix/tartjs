@@ -234,17 +234,17 @@ actor('hello actor world');
       `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
   * Return: _Object_
     * `initial`: _Object_ Initial effect.
-      * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior.
-      * `sent`: _Array_ An array of events. An events is a tuple containing a message and the context of the actor the message is addressed to.
+      * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior (the value of _this_ when the behavior executes).
+      * `sent`: _Array_ An array of events. An event is a tuple containing a message and the context of the actor the message is addressed to.
     * `dispatch`: _Function_ `function () {}` Function to call in order to dispatch a single event.
       * Return: _Object_ or `false`. Effect of dispatching next event or `false` if no events exist for dispatch.
-        * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior.
+        * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior (the value of _this_ when the behavior executes).
         * `event`: _Object_ The event that was dispatched.
           * `message`: _Any_ Message that was delivered.
           * `context`: _Object_ Actor context the message was delivered to.
         * `exception`: _Error_ _(Default: undefined)_ An exception if message delivery caused an exception.
         * `previous`: _Function_ _(Default: undefined)_ `function (message) {}`If the actor changed behavior, the previous behavior is referenced here. The new actor behavior is in event.context.behavior
-        * `sent`: _Array_ An array of events. An events is a tuple containing a message and the context of the actor the message is addressed to.
+        * `sent`: _Array_ An array of events. An event is a tuple containing a message and the context of the actor the message is addressed to.
     * `sponsor`: _Function_ `function (behavior) {}` A capability to create new actors.
       * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
       * `message`: _Any_ Any message.
@@ -284,13 +284,13 @@ var actor = tracing.sponsor(function (message) {
 ### tracing.dispatch()
 
   * Return: _Object_ or `false`. Effect of dispatching next event or `false` if no events exist for dispatch.
-    * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior.
+    * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior (the value of _this_ when the behavior executes).
     * `event`: _Object_ The event that was dispatched.
       * `message`: _Any_ Message that was delivered.
       * `context`: _Object_ Actor context the message was delivered to.
     * `exception`: _Error_ _(Default: undefined)_ An exception if message delivery caused an exception.
     * `previous`: _Function_ _(Default: undefined)_ `function (message) {}` If the actor changed behavior, the previous behavior is referenced here. The new actor behavior is in event.context.behavior
-    * `sent`: _Array_ An array of events. An events is a tuple containing a message and the context of the actor the message is addressed to.
+    * `sent`: _Array_ An array of events. An event is a tuple containing a message and the context of the actor the message is addressed to.
 
 Dispatch next event.
 
