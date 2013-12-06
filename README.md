@@ -18,6 +18,8 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
   * [Tests](#tests)
   * [Benchmarks](#benchmarks) 
   * [Documentation](#documentation)
+    * [Tart](#tart-1)
+    * [Tracing](#tracing)
   * [Sources](#sources)
 
 `tart` also happens to fit into a tweet :D
