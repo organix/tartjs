@@ -31,12 +31,16 @@ OTHER DEALINGS IN THE SOFTWARE.
 "use strict";
 
 /*
+  * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
+      `function (exception) {}` An optional handler to call if a sponsored actor
+      behavior throws an exception.
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
     * `behavior`: _Function_ `function (message) {}` Actor behavior to 
         invoke every time an actor receives a message.
       * `message`: _Any_ Any message.
 */
-module.exports.sponsor = function () {
+module.exports.sponsor = function (fail) {
+    fail = fail || function (exception) {}; // failure handler is optional
     /*
       * `behavior`: _Function_ `function (message) {}` Actor behavior to 
           invoke every time an actor receives a message.
@@ -53,7 +57,9 @@ module.exports.sponsor = function () {
             setImmediate(function deliver() {
                 try {
                     context.behavior(message);
-                } catch (exception) {};
+                } catch (exception) {
+                    fail(exception);
+                };
             });
         };
         var context = {
