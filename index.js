@@ -30,14 +30,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-module.exports.sponsor = function () {
+module.exports.sponsor = function (fail) {
+    fail = fail || function (exception) {};
     var config = function create(behavior) {
         var actor = function send(message) {
             setImmediate(function deliver() {
                 try {
                     context.behavior(message);
                 } catch (ex) {
-                    console.log('FAIL!', ex);
+                    fail(ex);
                 }
             });
         };
@@ -51,7 +52,8 @@ module.exports.sponsor = function () {
     return config;
 };
 
-module.exports.tracing = function () {
+module.exports.tracing = function (fail) {
+    fail = fail || function () {};
     var events = [];
     var effect = {
         created: [],
@@ -76,6 +78,7 @@ module.exports.tracing = function () {
             Array.prototype.push.apply(events, effect.sent);
         } catch (ex) {
             effect.exception = ex;
+            fail(ex);
         }
         return effect;
     };
