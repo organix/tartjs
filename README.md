@@ -283,6 +283,15 @@ var actor = sponsor(function (message) {
 });
 
 actor('foo');
+
+//  created actor in context { self: [Function: send],
+//    behavior: [Function],
+//    sponsor: [Function: create] }
+//  delivering message foo to context { self: [Function: send],
+//    behavior: [Function],
+//    sponsor: [Function: create] }
+//  delivering a message
+//  got message foo
 ```
 
 ### sponsor(behavior)
