@@ -85,6 +85,68 @@ tart.sponsor = function sponsor(fail) {
   * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
       `function (exception) {}` An optional handler to call if a sponsored actor
       behavior throws an exception.
+  * `dispatch`: _Function_ _(Default: `function (deliver) {}`)_ 
+      `function (deliver) {}` Dispatch function for dispatching `deliver` 
+      closures
+  * `deliver`: _Function_ _(Default: `function (context) {}`)_ 
+      `function (context) {}` Deliver function that creates a chain closures 
+      around `context` and `message` and returns an argument free function that
+      is handed to `dispatch` for dispatch.
+  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to 
+        invoke every time an actor receives a message.
+      * `message`: _Any_ Any message.
+
+  Create actor configuration/sponsor.
+*/
+tart.debug = function debug(fail, dispatch, deliver) {
+    fail = fail || function (exception) {}; // failure handler is optional
+    dispatch = dispatch || setImmediate; // dispatch function is optional
+    deliver = deliver || function deliver(context) {
+        return function deliver(message) {
+            return function deliver() {
+                try {
+                    context.behavior(message);
+                } catch (exception) {
+                    fail(exception);
+                }
+            };
+        };
+    };
+    /*
+      * `behavior`: _Function_ `function (message) {}` Actor behavior to 
+          invoke every time an actor receives a message.
+        * `message`: _Any_ Any message.
+      * Return: _Function_ `function (message) {}` Actor reference that can be 
+          invoked to send the actor a message.        
+        * `message`: _Any_ Any message.      
+
+      Create a new actor.      
+    */
+    var config = function create(behavior) {
+
+        /*
+          * `message`: _Any_ Any message.
+
+          Send message to the actor.
+        */
+        var actor = function send(message) {
+            dispatch(deliver(context)(message));
+        };
+        var context = {
+            self: actor,
+            behavior: behavior,
+            sponsor: config
+        };
+        return actor;
+    };
+    return config;
+};
+
+/*
+  * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
+      `function (exception) {}` An optional handler to call if a sponsored actor
+      behavior throws an exception.
   * Return: _Object_
     * `initial`: _Object_ Initial effect.
       * `created`: _Array_ An array of created contexts. A context is the 
