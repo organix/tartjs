@@ -237,11 +237,52 @@ Creates a sponsor capability to create new actors with and allows replacing part
 
 ```javascript
 var tart = require('tart');
-var sponsor = tart.control();
 
-var reportingSponsor = tart.control(function (exception) {
-    console.dir(exception);
+var dispatch = function (deliver) {
+    console.log('delivering a message'); 
+    deliver(); 
+};
+
+var deliver = function deliver(context) {
+    return function deliver(message) {
+        console.log('delivering message', message, 'to context', context);
+        return function deliver() {
+            try {
+                context.behavior(message);
+            } catch (exception) {
+                console.log('got exception', exception);
+            }
+        };
+    }; 
+};
+
+var constructConfig = function constructConfig(dispatch, deliver) {
+    var config = function create(behavior) {
+        var actor = function send(message) {
+            dispatch(deliver(context)(message));
+        };
+        var context = {
+            self: actor,
+            behavior: behavior,
+            sponsor: config
+        };
+        console.log('created actor in context', context);
+        return actor;
+    };
+    return config;
+};
+
+var sponsor = tart.control(null, {
+    constructConfig: constructConfig,
+    deliver: deliver,
+    dispatch: dispatch
 });
+
+var actor = sponsor(function (message) {
+    console.log('got message', message);
+});
+
+actor('foo');
 ```
 
 ### sponsor(behavior)
