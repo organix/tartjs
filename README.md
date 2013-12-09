@@ -220,9 +220,9 @@ actor('hello actor world');
 
 **Public API**
 
-  * [tart.control(\[fail\], \[options\])](#tartsponsorfail-options)
-  * [sponsor(behavior)](#sponsorbehavior)
-  * [actor(message)](#actormessage)
+  * [tart.control(\[fail\], \[options\])](#tartcontrolfail-options)
+  * [sponsor(behavior)](#sponsorbehavior-1)
+  * [actor(message)](#actormessage-1)
 
 ### tart.control([fail], [options])
 
@@ -243,6 +243,14 @@ var reportingSponsor = tart.control(function (exception) {
     console.dir(exception);
 });
 ```
+
+### sponsor(behavior)
+
+Same as the core [Tart](#tart-1) implementation. _See: [sponsor(behavior)](#sponsorbehavior)_
+
+### actor(message)
+
+Same as the core [Tart](#tart-1) implementation. _See: [actor(message)](#actormessage)_
 
 ## Sources
 
