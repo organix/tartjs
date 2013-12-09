@@ -30,7 +30,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 "use strict";
 
-var tart = require('../index.js');
+var tart = require('../examples/tracing.js');
 
 var test = module.exports = {};
 

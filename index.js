@@ -37,30 +37,26 @@ var tart = module.exports;
       `function (exception) {}` An optional handler to call if a sponsored actor
       behavior throws an exception.
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
-    * `behavior`: _Function_ `function (message) {}` Actor behavior to 
-        invoke every time an actor receives a message.
-      * `message`: _Any_ Any message.
 
-  Create actor configuration/sponsor.
+  Creates a sponsor capability to create new actors with.
 */
 tart.sponsor = function sponsor(fail) {
     fail = fail || function (exception) {}; // failure handler is optional
     /*
       * `behavior`: _Function_ `function (message) {}` Actor behavior to 
           invoke every time an actor receives a message.
-        * `message`: _Any_ Any message.
       * Return: _Function_ `function (message) {}` Actor reference that can be 
-          invoked to send the actor a message.        
-        * `message`: _Any_ Any message.      
+          invoked to send the actor a message.            
 
-      Create a new actor.      
+      Creates a new actor and returns the actor reference in form of a capability
+      to send that actor a message.      
     */
     var config = function create(behavior) {
         
         /*
           * `message`: _Any_ Any message.
 
-          Send message to the actor.
+          Asynchronously sends the `message` to the `actor`.
         */
         var actor = function send(message) {
             setImmediate(function deliver() {
@@ -85,24 +81,29 @@ tart.sponsor = function sponsor(fail) {
   * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
       `function (exception) {}` An optional handler to call if a sponsored actor
       behavior throws an exception.
-  * `dispatch`: _Function_ _(Default: `function (deliver) {}`)_ 
-      `function (deliver) {}` Dispatch function for dispatching `deliver` 
-      closures
-  * `deliver`: _Function_ _(Default: `function (context) {}`)_ 
-      `function (context) {}` Deliver function that creates a chain closures 
-      around `context` and `message` and returns an argument free function that
-      is handed to `dispatch` for dispatch.
+  * `options`: _Object_ _(Default: undefined)_ Optional overrides.
+    * `constructConfig`: _Function_ _(Default: `function (dispatch, deliver) {}`)_ 
+        `function (dispatch, deliver) {}` Configuration creation function that 
+        is given `dispatch` and `deliver`. It should return a capability 
+        `function (behavior) {}` to create new actors.
+    * `deliver`: _Function_ _(Default: `function (context) {}`)_ 
+        `function (context) {}` Deliver function that creates a chain closures 
+        around `context` and `message` and returns a function for `dispatch` to 
+        dispatch.
+    * `dispatch`: _Function_ _(Default: `setImmediate`)_ 
+        `function (deliver) {}` Dispatch function for dispatching `deliver` 
+        closures.  
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
-    * `behavior`: _Function_ `function (message) {}` Actor behavior to 
-        invoke every time an actor receives a message.
-      * `message`: _Any_ Any message.
 
-  Create actor configuration/sponsor.
+  Creates a sponsor capability to create new actors with and allows replacing
+  parts of the implementation.
 */
-tart.debug = function debug(fail, dispatch, deliver) {
+tart.control = function control(fail, options) {
     fail = fail || function (exception) {}; // failure handler is optional
-    dispatch = dispatch || setImmediate; // dispatch function is optional
-    deliver = deliver || function deliver(context) {
+
+    options = options || {};
+    var dispatch = options.dispatch || setImmediate;
+    var deliver = options.deliver || function deliver(context) {
         return function deliver(message) {
             return function deliver() {
                 try {
@@ -113,160 +114,19 @@ tart.debug = function debug(fail, dispatch, deliver) {
             };
         };
     };
-    /*
-      * `behavior`: _Function_ `function (message) {}` Actor behavior to 
-          invoke every time an actor receives a message.
-        * `message`: _Any_ Any message.
-      * Return: _Function_ `function (message) {}` Actor reference that can be 
-          invoked to send the actor a message.        
-        * `message`: _Any_ Any message.      
-
-      Create a new actor.      
-    */
-    var config = function create(behavior) {
-
-        /*
-          * `message`: _Any_ Any message.
-
-          Send message to the actor.
-        */
-        var actor = function send(message) {
-            dispatch(deliver(context)(message));
-        };
-        var context = {
-            self: actor,
-            behavior: behavior,
-            sponsor: config
-        };
-        return actor;
-    };
-    return config;
-};
-
-/*
-  * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
-      `function (exception) {}` An optional handler to call if a sponsored actor
-      behavior throws an exception.
-  * Return: _Object_
-    * `initial`: _Object_ Initial effect.
-      * `created`: _Array_ An array of created contexts. A context is the 
-          execution context of an actor behavior (the value of _this_ when the 
-          behavior executes).
-      * `sent`: _Array_ An array of events. An event is a tuple containing a 
-      message and the context of the actor the message is addressed to.
-    * `dispatch`: _Function_ `function () {}` Function to call in order to
-        dispatch a single event.
-      * Return: _Object_ or `false`. Effect of dispatching next event or `false`
-          if no events exist for dispatch.
-        * `created`: _Array_ An array of created contexts. A context is the 
-            execution context of an actor behavior (the value of _this_ when the 
-            behavior executes).
-        * `event`: _Object_ The event that was dispatched.
-          * `message`: _Any_ Message that was delivered.
-          * `context`: _Object_ Actor context the message was delivered to.
-        * `exception`: _Error_ _(Default: undefined)_ An exception if message
-            delivery caused an exception.
-        * `previous`: _Function_ _(Default: undefined)_ `function (message) {}`
-            If the actor changed behavior, the previous behavior is referenced
-            here. The new actor behavior is in event.context.behavior
-        * `sent`: _Array_ An array of events. An event is a tuple containing a 
-            message and the context of the actor the message is addressed to.
-    * `sponsor`: _Function_ `function (behavior) {}` A capability to create new 
-        actors.
-      * `behavior`: _Function_ `function (message) {}` Actor behavior to 
-          invoke every time an actor receives a message.
-      * `message`: _Any_ Any message.
-
-  Create actor configuration/sponsor with tracing resources.
-*/
-tart.tracing = function tracing(fail) {
-    fail = fail || function (exception) {}; // failure handler is optional
-    var events = [];
-    var effect = {
-        created: [],
-        sent: events // mechanism for bootstrapping initial configuration state
-    };
-
-    /*
-      * Return: _Object_ or `false`. Effect of dispatching next event or `false`
-          if no events exist for dispatch.
-        * `created`: _Array_ An array of created contexts. A context is the 
-            execution context of an actor behavior (the value of _this_ when the 
-            behavior executes).
-        * `event`: _Object_ The event that was dispatched.
-          * `message`: _Any_ Message that was delivered.
-          * `context`: _Object_ Actor context the message was delivered to.
-        * `exception`: _Error_ _(Default: undefined)_ An exception if message
-            delivery caused an exception.
-        * `previous`: _Function_ _(Default: undefined)_ `function (message) {}`
-            If the actor changed behavior, the previous behavior is referenced
-            here. The new actor behavior is in event.context.behavior
-        * `sent`: _Array_ An array of events. An event is a tuple containing a 
-            message and the context of the actor the message is addressed to.
-
-      Dispatch next event.
-    */
-    var dispatch = function dispatch() {
-        var event = events.shift();
-        if (!event) {
-            return false;
-        }
-
-        effect = {
-            event: event,
-            created: [],
-            sent: []
-        };
-        try {
-            var previous = event.context.behavior;
-            event.context.behavior(event.message);
-            if (previous !== event.context.behavior) {
-                effect.previous = previous;
-            }
-            Array.prototype.push.apply(events, effect.sent);
-        } catch (exception) {
-            effect.exception = exception;
-            fail(exception);
-        }
-        return effect;
-    };
-
-    /*
-      * `behavior`: _Function_ `function (message) {}` Actor behavior to 
-          invoke every time an actor receives a message.
-        * `message`: _Any_ Any message.
-      * Return: _Function_ `function (message) {}` Actor reference that can be 
-          invoked to send the actor a message.        
-        * `message`: _Any_ Any message.   
-
-      Create a new (traced) actor.
-    */
-    var config = function create(behavior) {
-
-        /*
-          * `message`: _Any_ Any message.
-
-          Send message to the actor.
-        */
-        var actor = function send(message) {
-            var event = {
-                message: message,
-                context: context
+    var constructConfig = options.constructConfig || function constructConfig(dispatch, deliver) {
+        var config = function create(behavior) {
+            var actor = function send(message) {
+                dispatch(deliver(context)(message));
             };
-            effect.sent.push(event);
+            var context = {
+                self: actor,
+                behavior: behavior,
+                sponsor: config
+            };
+            return actor;
         };
-        var context = {
-            self: actor,
-            behavior: behavior,
-            sponsor: config
-        };
-        effect.created.push(context);
-        return actor;
+        return config;
     };
-
-    return {
-        initial: effect,
-        dispatch: dispatch,
-        sponsor: config
-    };
+    return constructConfig(dispatch, deliver);
 };

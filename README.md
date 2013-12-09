@@ -19,7 +19,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
   * [Benchmarks](#benchmarks) 
   * [Documentation](#documentation)
     * [Tart](#tart-1)
-    * [Tracing](#tracing)
+    * [Control](#control)
   * [Sources](#sources)
 
 `tart` also happens to fit into a tweet :D
@@ -151,6 +151,8 @@ For rings of sizes larger than 4 Million you may need to expand memory available
 
 ## Documentation
 
+The [Tart](#tart-1) implementation is the implementation optimized for fastest execution time. In contrast, [Control](#control) implementation allows for total control of the runtime and execution semantics. Although the default behavior of [Control](#control) is the same as [Tart](#tart-1), it is somewhat slower due to extra overhead incurred by pluggability of control and observability mechanisms.
+
 ### Tart
 
 **Public API**
@@ -178,9 +180,7 @@ var reportingSponsor = tart.sponsor(function (exception) {
 ### sponsor(behavior)
 
   * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
-    * `message`: _Any_ Any message.
   * Return: _Function_ `function (message) {}` Actor reference in form of a capability that can be invoked to send the actor a message.
-    * `message`: _Any_ Any message.
 
 Creates a new actor and returns the actor reference in form of a capability to send that actor a message.
 
@@ -198,12 +198,8 @@ var actor = sponsor(function (message) {
 When the `behavior` is invoked upon the receipt of a message, it's `this` will be bound with the following:
 
   * `this.self`: _Function_ `function (message) {}` Reference to the actor that is executing the `behavior` (in form of a capability that can be invoked to send the actor a message).
-    * `message`: _Any_ Any message.
   * `this.behavior`: _Function_ `function (message) {}` The behavior of the actor. To change actor behavior (a "become" operation) assign a new function to this parameter.
-    * `message`: _Any_ Any message.
-  * `this.sponsor`: _Function_ `function (behavior) {}` A capability to create new actors. To create a new actor call `this.sponsor(behavior)`
-    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
-      * `message`: _Any_ Any message.
+  * `this.sponsor`: _Function_ `function (behavior) {}` A capability to create new actors. To create a new actor call `this.sponsor(behavior)`.
 
 ### actor(message)
 
@@ -220,89 +216,32 @@ var actor = sponsor(function behavior(message) {
 actor('hello actor world');
 ```
 
-### Tracing
+### Control
 
 **Public API**
 
-  * [tart.tracing(\[fail\])](#tarttracingfail)
-  * [tracing.sponsor(behavior)](#tracingsponsorbehavior)
-  * [tracing.dispatch()](#tracingdispatch)
+  * [tart.control(\[fail\], \[options\])](#tartsponsorfail-options)
+  * [sponsor(behavior)](#sponsorbehavior)
+  * [actor(message)](#actormessage)
 
-### tart.tracing([fail])
+### tart.control([fail], [options])
 
-  * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
-      `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
-  * Return: _Object_
-    * `initial`: _Object_ Initial effect.
-      * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior (the value of _this_ when the behavior executes).
-      * `sent`: _Array_ An array of events. An event is a tuple containing a message and the context of the actor the message is addressed to.
-    * `dispatch`: _Function_ `function () {}` Function to call in order to dispatch a single event.
-      * Return: _Object_ or `false`. Effect of dispatching next event or `false` if no events exist for dispatch.
-        * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior (the value of _this_ when the behavior executes).
-        * `event`: _Object_ The event that was dispatched.
-          * `message`: _Any_ Message that was delivered.
-          * `context`: _Object_ Actor context the message was delivered to.
-        * `exception`: _Error_ _(Default: undefined)_ An exception if message delivery caused an exception.
-        * `previous`: _Function_ _(Default: undefined)_ `function (message) {}`If the actor changed behavior, the previous behavior is referenced here. The new actor behavior is in event.context.behavior
-        * `sent`: _Array_ An array of events. An event is a tuple containing a message and the context of the actor the message is addressed to.
-    * `sponsor`: _Function_ `function (behavior) {}` A capability to create new actors.
-      * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
-      * `message`: _Any_ Any message.
+  * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
+  * `options`: _Object_ _(Default: undefined)_ Optional overrides.
+    * `constructConfig`: _Function_ _(Default: `function (dispatch, deliver) {}`)_ `function (dispatch, deliver) {}` Configuration creation function that is given `dispatch` and `deliver`. It should return a capability `function (behavior) {}` to create new actors.
+    * `deliver`: _Function_ _(Default: `function (context) {}`)_ `function (context) {}` Deliver function that creates a chain closures around `context` and `message` and returns a function for `dispatch` to dispatch.
+    * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures.  
+  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
-Create actor configuration/sponsor with tracing resources.
+Creates a sponsor capability to create new actors with and allows replacing parts of the implementation.
 
 ```javascript
 var tart = require('tart');
-var tracing = tart.tracing();
+var sponsor = tart.control();
 
-console.dir(tracing);
-// { initial: { created: [], sent: [] },
-//   dispatch: [Function: dispatch],
-//   sponsor: [Function: create] }
-```
-
-### tracing.sponsor(behavior)
-
-  * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
-    * `message`: _Any_ Any message.
-  * Return: _Function_ `function (message) {}` Actor reference that can be invoked to send the actor a message.        
-    * `message`: _Any_ Any message.   
-
-Creates a new (traced) actor and returns the actor reference in form of a capability to send that actor a message.
-
-```javascript
-var tart = require('tart');
-var tracing = tart.tracing();
-var actor = tracing.sponsor(function (message) {
-    console.log('got message', message); 
-    console.log(this.self);
-    console.log(this.behavior);
-    console.log(this.sponsor);
+var reportingSponsor = tart.control(function (exception) {
+    console.dir(exception);
 });
-```
-
-### tracing.dispatch()
-
-  * Return: _Object_ or `false`. Effect of dispatching next event or `false` if no events exist for dispatch.
-    * `created`: _Array_ An array of created contexts. A context is the execution context of an actor behavior (the value of _this_ when the behavior executes).
-    * `event`: _Object_ The event that was dispatched.
-      * `message`: _Any_ Message that was delivered.
-      * `context`: _Object_ Actor context the message was delivered to.
-    * `exception`: _Error_ _(Default: undefined)_ An exception if message delivery caused an exception.
-    * `previous`: _Function_ _(Default: undefined)_ `function (message) {}` If the actor changed behavior, the previous behavior is referenced here. The new actor behavior is in event.context.behavior
-    * `sent`: _Array_ An array of events. An event is a tuple containing a message and the context of the actor the message is addressed to.
-
-Dispatch next event.
-
-```javascript
-var tart = require('tart');
-var tracing = tart.tracing();
-
-var effect = tracing.initial;
-console.dir(effect);
-while ((effect = tracing.dispatch()) !== false) {
-    console.dir(effect);
-}
 ```
 
 ## Sources
