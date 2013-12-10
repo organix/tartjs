@@ -240,6 +240,10 @@ actor('hello actor world');
 
 Creates a sponsor capability to create new actors with and allows replacing parts of the implementation.
 
+To run the below example run:
+
+    npm run pluggable
+
 ```javascript
 var tart = require('tart');
 
