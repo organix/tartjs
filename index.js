@@ -33,15 +33,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 var tart = module.exports;
 
 /*
-  * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
-      `function (exception) {}` An optional handler to call if a sponsored actor
-      behavior throws an exception.
+  * `options`: _Object_ _(Default: undefined)_
+    * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
+        `function (exception) {}` An optional handler to call if a sponsored actor
+        behavior throws an exception.
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
   Creates a sponsor capability to create new actors with.
 */
-tart.sponsor = function sponsor(fail) {
-    fail = fail || function (exception) {}; // failure handler is optional
+tart.sponsor = function sponsor(options) {
+    options = options || {};
+    var fail = options.fail || function (exception) {};
+
     /*
       * `behavior`: _Function_ `function (message) {}` Actor behavior to 
           invoke every time an actor receives a message.
@@ -78,9 +81,6 @@ tart.sponsor = function sponsor(fail) {
 };
 
 /*
-  * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
-      `function (exception) {}` An optional handler to call if a sponsored actor
-      behavior throws an exception.
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
     * `constructConfig`: _Function_ _(Default: `function (dispatch, deliver) {}`)_ 
         `function (dispatch, deliver) {}` Configuration creation function that 
@@ -92,14 +92,18 @@ tart.sponsor = function sponsor(fail) {
         dispatch.
     * `dispatch`: _Function_ _(Default: `setImmediate`)_ 
         `function (deliver) {}` Dispatch function for dispatching `deliver` 
-        closures.  
+        closures. 
+    * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
+        `function (exception) {}` An optional handler to call if a sponsored actor
+        behavior throws an exception. 
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
   Creates a sponsor capability to create new actors with and allows replacing
   parts of the implementation.
 */
-tart.control = function control(fail, options) {
-    fail = fail || function (exception) {}; // failure handler is optional
+tart.control = function sponsor(options) {
+    options = options || {};
+    var fail = options.fail || function (exception) {};
 
     options = options || {};
     var dispatch = options.dispatch || setImmediate;

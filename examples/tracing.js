@@ -96,10 +96,11 @@ module.exports.tracing = function tracing(fail) {
     return {
         initial: effect,
         dispatch: tracingDispatch,
-        sponsor: tart.control(fail, {
+        sponsor: tart.control({
             constructConfig: constructConfig,
             dispatch: dispatch,
-            deliver: deliver
+            deliver: deliver,
+            fail: fail
         })
     };
 };

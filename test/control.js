@@ -41,7 +41,7 @@ test['control allows for alternate dispatch mechanism'] = function (test) {
         deliver(); // dispatch manually
     };
 
-    var sponsor = tart.control(null, {dispatch: dispatch});
+    var sponsor = tart.control({dispatch: dispatch});
 
     var actor = sponsor(function (message) {
         test.equal(message, 'foo');
@@ -69,7 +69,7 @@ test['control allows for alternate deliver mechanism'] = function (test) {
         };
     };
 
-    var sponsor = tart.control(null, {deliver: deliver});
+    var sponsor = tart.control({deliver: deliver});
 
     var actor = sponsor(function (message) {
         test.equal(message, 'foo');
@@ -103,7 +103,7 @@ test['control allows for alternate create mechanism'] = function (test) {
         return config;
     };
 
-    var sponsor = tart.control(null, {constructConfig: constructConfig});
+    var sponsor = tart.control({constructConfig: constructConfig});
 
     var actor = sponsor(newBeh);
     actor('foo');
