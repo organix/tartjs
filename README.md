@@ -245,23 +245,21 @@ var dispatch = function (deliver) {
     deliver(); 
 };
 
-var deliver = function deliver(context) {
-    return function deliver(message) {
-        console.log('delivering message', message, 'to context', context);
-        return function deliver() {
-            try {
-                context.behavior(message);
-            } catch (exception) {
-                console.log('got exception', exception);
-            }
-        };
-    }; 
+var deliver = function deliver(context, message, options) {
+    console.log('delivering message', message, 'to context', context);
+    return function deliver() {
+        try {
+            context.behavior(message);
+        } catch (exception) {
+            console.log('got exception', exception);
+        }
+    };
 };
 
-var constructConfig = function constructConfig(dispatch, deliver) {
+var constructConfig = function constructConfig(options) {
     var config = function create(behavior) {
         var actor = function send(message) {
-            dispatch(deliver(context)(message));
+            options.dispatch(options.deliver(context, message, options));
         };
         var context = {
             self: actor,
@@ -274,7 +272,7 @@ var constructConfig = function constructConfig(dispatch, deliver) {
     return config;
 };
 
-var sponsor = tart.control(null, {
+var sponsor = tart.control({
     constructConfig: constructConfig,
     deliver: deliver,
     dispatch: dispatch

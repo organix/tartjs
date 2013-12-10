@@ -82,14 +82,13 @@ tart.sponsor = function sponsor(options) {
 
 /*
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
-    * `constructConfig`: _Function_ _(Default: `function (dispatch, deliver) {}`)_ 
-        `function (dispatch, deliver) {}` Configuration creation function that 
-        is given `dispatch` and `deliver`. It should return a capability 
-        `function (behavior) {}` to create new actors.
-    * `deliver`: _Function_ _(Default: `function (context) {}`)_ 
-        `function (context) {}` Deliver function that creates a chain closures 
-        around `context` and `message` and returns a function for `dispatch` to 
-        dispatch.
+    * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ 
+        `function (options) {}` Configuration creation function that 
+        is given `options`. It should return a capability `function (behavior) {}` 
+        to create new actors.
+    * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ 
+        `function (context, message, options) {}` Deliver function that returns 
+        a function for `dispatch` to dispatch.
     * `dispatch`: _Function_ _(Default: `setImmediate`)_ 
         `function (deliver) {}` Dispatch function for dispatching `deliver` 
         closures. 
@@ -103,25 +102,21 @@ tart.sponsor = function sponsor(options) {
 */
 tart.control = function sponsor(options) {
     options = options || {};
-    var fail = options.fail || function (exception) {};
-
-    options = options || {};
-    var dispatch = options.dispatch || setImmediate;
-    var deliver = options.deliver || function deliver(context) {
-        return function deliver(message) {
-            return function deliver() {
-                try {
-                    context.behavior(message);
-                } catch (exception) {
-                    fail(exception);
-                }
-            };
+    options.fail = options.fail || function (exception) {};
+    options.dispatch = options.dispatch || setImmediate;
+    options.deliver = options.deliver || function deliver(context, message, options) {
+        return function deliver() {
+            try {
+                context.behavior(message);
+            } catch (exception) {
+                options.fail(exception);
+            }
         };
     };
-    var constructConfig = options.constructConfig || function constructConfig(dispatch, deliver) {
+    options.constructConfig = options.constructConfig || function constructConfig(options) {
         var config = function create(behavior) {
             var actor = function send(message) {
-                dispatch(deliver(context)(message));
+                options.dispatch(options.deliver(context, message, options));
             };
             var context = {
                 self: actor,
@@ -132,5 +127,5 @@ tart.control = function sponsor(options) {
         };
         return config;
     };
-    return constructConfig(dispatch, deliver);
+    return options.constructConfig(options);
 };

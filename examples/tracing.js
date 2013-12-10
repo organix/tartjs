@@ -67,20 +67,18 @@ module.exports.tracing = function tracing(fail) {
 
     var dispatch = function dispatch(deliver) {};
 
-    var deliver = function deliver(context) {
-        return function deliver(message) {
-            var event = {
-                message: message,
-                context: context
-            };
-            effect.sent.push(event);
+    var deliver = function deliver(context, message, options) {
+        var event = {
+            message: message,
+            context: context
         };
+        effect.sent.push(event);
     };
 
-    var constructConfig = function constructConfig(dispatch, deliver) {
+    var constructConfig = function constructConfig(options) {
         var config = function create(behavior) {
             var actor = function send(message) {
-                dispatch(deliver(context)(message));
+                options.dispatch(options.deliver(context, message, options));
             };
             var context = {
                 self: actor,

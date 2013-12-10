@@ -52,20 +52,19 @@ test['control allows for alternate dispatch mechanism'] = function (test) {
 };
 
 test['control allows for alternate deliver mechanism'] = function (test) {
-    test.expect(4);
-    var deliver = function deliver(context) {
+    test.expect(5);
+    var deliver = function deliver(context, message, options) {
         test.ok(context);
-        return function deliver(message) {
-            test.ok(message);
-            return function deliver() {
-                test.ok(true);
-                try {
-                    context.behavior(message);
-                } catch (exception) {
-                    test.equal(false, exception); // fail test
-                }
-                test.done();
-            };
+        test.equal(message, 'foo');
+        test.ok(options);
+        return function deliver() {
+            test.ok(true);
+            try {
+                context.behavior(message);
+            } catch (exception) {
+                test.equal(false, exception); // fail test
+            }
+            test.done();
         };
     };
 
@@ -79,19 +78,18 @@ test['control allows for alternate deliver mechanism'] = function (test) {
 };
 
 test['control allows for alternate create mechanism'] = function (test) {
-    test.expect(4);
+    test.expect(3);
     var newBeh = function newBeh(message) {
         test.equal(message, 'foo');
         test.done();
     };
 
-    var constructConfig = function constructConfig(dispatch, deliver) {
-        test.ok(deliver);
-        test.ok(dispatch);
+    var constructConfig = function constructConfig(options) {
+        test.ok(options);
         var config = function create(behavior) {
             test.strictEqual(behavior, newBeh);
             var actor = function send(message) {
-                dispatch(deliver(context)(message));
+                options.dispatch(options.deliver(context, message, options));
             };
             var context = {
                 self: actor,
