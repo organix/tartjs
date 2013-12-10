@@ -1,6 +1,6 @@
 /*
 
-control.js - control configuration test
+pluggable.js - pluggable configuration test
 
 The MIT License (MIT)
 
@@ -34,14 +34,14 @@ var tart = require('../index.js');
 
 var test = module.exports = {};
 
-test['control allows for alternate dispatch mechanism'] = function (test) {
+test['pluggable allows for alternate dispatch mechanism'] = function (test) {
     test.expect(2);
     var dispatch = function dispatch(deliver) {
         test.ok(deliver); 
         deliver(); // dispatch manually
     };
 
-    var sponsor = tart.control({dispatch: dispatch});
+    var sponsor = tart.pluggable({dispatch: dispatch});
 
     var actor = sponsor(function (message) {
         test.equal(message, 'foo');
@@ -51,7 +51,7 @@ test['control allows for alternate dispatch mechanism'] = function (test) {
     actor('foo');
 };
 
-test['control allows for alternate deliver mechanism'] = function (test) {
+test['pluggable allows for alternate deliver mechanism'] = function (test) {
     test.expect(5);
     var deliver = function deliver(context, message, options) {
         test.ok(context);
@@ -68,7 +68,7 @@ test['control allows for alternate deliver mechanism'] = function (test) {
         };
     };
 
-    var sponsor = tart.control({deliver: deliver});
+    var sponsor = tart.pluggable({deliver: deliver});
 
     var actor = sponsor(function (message) {
         test.equal(message, 'foo');
@@ -77,7 +77,7 @@ test['control allows for alternate deliver mechanism'] = function (test) {
     actor('foo');
 };
 
-test['control allows for alternate create mechanism'] = function (test) {
+test['pluggable allows for alternate create mechanism'] = function (test) {
     test.expect(3);
     var newBeh = function newBeh(message) {
         test.equal(message, 'foo');
@@ -101,7 +101,7 @@ test['control allows for alternate create mechanism'] = function (test) {
         return config;
     };
 
-    var sponsor = tart.control({constructConfig: constructConfig});
+    var sponsor = tart.pluggable({constructConfig: constructConfig});
 
     var actor = sponsor(newBeh);
     actor('foo');

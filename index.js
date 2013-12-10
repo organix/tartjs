@@ -100,7 +100,7 @@ tart.sponsor = function sponsor(options) {
   Creates a sponsor capability to create new actors with and allows replacing
   parts of the implementation.
 */
-tart.control = function sponsor(options) {
+tart.pluggable = function sponsor(options) {
     options = options || {};
     options.fail = options.fail || function (exception) {};
     options.dispatch = options.dispatch || setImmediate;

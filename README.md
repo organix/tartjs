@@ -19,7 +19,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
   * [Benchmarks](#benchmarks) 
   * [Documentation](#documentation)
     * [Tart](#tart-1)
-    * [Control](#control)
+    * [Pluggable](#pluggable)
   * [Sources](#sources)
 
 `tart` also happens to fit into a tweet :D
@@ -153,7 +153,7 @@ For rings of sizes larger than 4 Million you may need to expand memory available
 
 ## Documentation
 
-The [Tart](#tart-1) implementation is the implementation optimized for fastest execution time. In contrast, [Control](#control) implementation allows for total control of the runtime and execution semantics. Although the default behavior of [Control](#control) is the same as [Tart](#tart-1), it is somewhat slower due to extra overhead incurred by pluggability of control and observability mechanisms.
+The [Tart](#tart-1) implementation is the implementation optimized for fastest execution time. In contrast, [Pluggable](#pluggable) implementation allows for total control of the runtime and execution semantics. Although the default behavior of [Pluggable](#pluggable) is the same as [Tart](#tart-1), it is somewhat slower due to extra overhead incurred by pluggability of control and observability mechanisms.
 
 ### Tart
 
@@ -218,21 +218,21 @@ var actor = sponsor(function behavior(message) {
 actor('hello actor world');
 ```
 
-### Control
+### Pluggable
 
 **Public API**
 
-  * [tart.control(\[fail\], \[options\])](#tartcontrolfail-options)
+  * [tart.pluggable(\[options\])](#tartpluggableoptions)
   * [sponsor(behavior)](#sponsorbehavior-1)
   * [actor(message)](#actormessage-1)
 
-### tart.control([fail], [options])
+### tart.pluggable([options])
 
-  * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
-    * `constructConfig`: _Function_ _(Default: `function (dispatch, deliver) {}`)_ `function (dispatch, deliver) {}` Configuration creation function that is given `dispatch` and `deliver`. It should return a capability `function (behavior) {}` to create new actors.
-    * `deliver`: _Function_ _(Default: `function (context) {}`)_ `function (context) {}` Deliver function that creates a chain closures around `context` and `message` and returns a function for `dispatch` to dispatch.
-    * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures.  
+    * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ `function (options) {}` Configuration creation function that is given `options`. It should return a capability `function (behavior) {}` to create new actors.
+    * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ `function (context, message, options) {}` Deliver function that returns a function for `dispatch` to dispatch.
+    * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures. 
+    * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.  
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
 Creates a sponsor capability to create new actors with and allows replacing parts of the implementation.
@@ -272,7 +272,7 @@ var constructConfig = function constructConfig(options) {
     return config;
 };
 
-var sponsor = tart.control({
+var sponsor = tart.pluggable({
     constructConfig: constructConfig,
     deliver: deliver,
     dispatch: dispatch

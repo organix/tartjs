@@ -94,7 +94,7 @@ module.exports.tracing = function tracing(fail) {
     return {
         initial: effect,
         dispatch: tracingDispatch,
-        sponsor: tart.control({
+        sponsor: tart.pluggable({
             constructConfig: constructConfig,
             dispatch: dispatch,
             deliver: deliver,
