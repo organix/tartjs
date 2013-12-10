@@ -32,6 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 var tart = module.exports;
 
+tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c};
+
 /*
   * `options`: _Object_ _(Default: undefined)_
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
