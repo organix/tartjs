@@ -36,7 +36,7 @@ var test = module.exports = {};
 
 test['forward actor should pass the message to specified forwarder'] = function (test) {
     test.expect(1);
-    var sponsor = tart.sponsor();
+    var sponsor = tart.minimal();
 
     var sinkActor = sponsor(function (message) {
         test.equal(message, 'foo');

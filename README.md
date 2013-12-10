@@ -18,7 +18,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
   * [Tests](#tests)
   * [Benchmarks](#benchmarks) 
   * [Documentation](#documentation)
-    * [Tart](#tart-1)
+    * [Minimal](#minimal)
     * [Pluggable](#pluggable)
   * [Sources](#sources)
 
@@ -37,7 +37,7 @@ To run the below example run:
 
 var tart = require('../index.js');
 
-var sponsor = tart.sponsor();
+var sponsor = tart.minimal();
 
 // create an actor that has no state
 var statelessActor = sponsor(function (message) {
@@ -153,29 +153,32 @@ For rings of sizes larger than 4 Million you may need to expand memory available
 
 ## Documentation
 
-The [Tart](#tart-1) implementation is the implementation optimized for fastest execution time. In contrast, [Pluggable](#pluggable) implementation allows for total control of the runtime and execution semantics. Although the default behavior of [Pluggable](#pluggable) is the same as [Tart](#tart-1), it is somewhat slower due to extra overhead incurred by pluggability of control and observability mechanisms.
+The [Minimal](#minimal) implementation is the implementation optimized for fastest execution time. In contrast, [Pluggable](#pluggable) implementation allows for total control of the runtime and execution semantics. Although the default behavior of [Pluggable](#pluggable) is the same as [Minimal](#minimal), it is somewhat slower due to extra overhead incurred by pluggability of control and observability mechanisms.
 
-### Tart
+### Minimal
 
 **Public API**
 
-  * [tart.sponsor(\[fail\])](#tartsponsorfail)
+  * [tart.minimal(\[options\])](#tartminimaloptions)
   * [sponsor(behavior)](#sponsorbehavior)
   * [actor(message)](#actormessage)
 
-### tart.sponsor([fail])
+### tart.minimal([options])
 
-  * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
+  * `options`: _Object_ _(Default: `undefined`)_
+    * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
 Creates a sponsor capability to create new actors with.
 
 ```javascript
 var tart = require('tart');
-var sponsor = tart.sponsor();
+var sponsor = tart.minimal();
 
-var reportingSponsor = tart.sponsor(function (exception) {
-    console.dir(exception);
+var reportingSponsor = tart.minimal({
+    fail: function (exception) {
+        console.dir(exception);
+    }
 });
 ```
 
@@ -188,7 +191,7 @@ Creates a new actor and returns the actor reference in form of a capability to s
 
 ```javascript
 var tart = require('tart');
-var sponsor = tart.sponsor();
+var sponsor = tart.minimal();
 var actor = sponsor(function (message) {
     console.log('got message', message); 
     console.log(this.self);
@@ -211,7 +214,7 @@ Asynchronously sends the `message` to the `actor`.
 
 ```javascript
 var tart = require('tart');
-var sponsor = tart.sponsor();
+var sponsor = tart.minimal();
 var actor = sponsor(function behavior(message) {
     console.log('got message', message);
 });
@@ -283,24 +286,15 @@ var actor = sponsor(function (message) {
 });
 
 actor('foo');
-
-//  created actor in context { self: [Function: send],
-//    behavior: [Function],
-//    sponsor: [Function: create] }
-//  delivering message foo to context { self: [Function: send],
-//    behavior: [Function],
-//    sponsor: [Function: create] }
-//  delivering a message
-//  got message foo
 ```
 
 ### sponsor(behavior)
 
-Same as the core [Tart](#tart-1) implementation. _See: [sponsor(behavior)](#sponsorbehavior)_
+Same as the core [Minimal](#minimal) implementation. _See: [sponsor(behavior)](#sponsorbehavior)_
 
 ### actor(message)
 
-Same as the core [Tart](#tart-1) implementation. _See: [actor(message)](#actormessage)_
+Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#actormessage)_
 
 ## Sources
 

@@ -36,7 +36,7 @@ var test = module.exports = {};
 
 test["serial actor's latest behavior should be the one handling the next message"] = function (test) {
     test.expect(9);
-    var sponsor = tart.sponsor();
+    var sponsor = tart.minimal();
 
     var serial = function (first, second, third) {
         var firstBeh = function firstBeh (message) {

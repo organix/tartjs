@@ -41,7 +41,7 @@ var tart = module.exports;
 
   Creates a sponsor capability to create new actors with.
 */
-tart.sponsor = function sponsor(options) {
+tart.minimal = function sponsor(options) {
     options = options || {};
     var fail = options.fail || function (exception) {};
 

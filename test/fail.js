@@ -40,7 +40,7 @@ test['actor failure should call fail handler handed to sponsor on construction']
         test.equal(exception.message, "boom!");
         test.done();
     };
-    var sponsor = tart.sponsor({fail: failHandler});
+    var sponsor = tart.minimal({fail: failHandler});
 
     var failing = sponsor(function failingBeh(message) {
         throw new Error("boom!");

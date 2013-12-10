@@ -36,7 +36,7 @@ var test = module.exports = {};
 
 test['one shot actor should forward the first message and become sink afterwards'] = function (test) {
     test.expect(2);
-    var sponsor = tart.sponsor();
+    var sponsor = tart.minimal();
 
     var sinkBeh = function sinkBeh (message) {
         test.equal(message, 'second');

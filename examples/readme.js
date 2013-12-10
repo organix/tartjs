@@ -32,7 +32,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 var tart = require('../index.js');
 
-var sponsor = tart.sponsor();
+var sponsor = tart.minimal();
 
 // create an actor that has no state
 var statelessActor = sponsor(function (message) {
