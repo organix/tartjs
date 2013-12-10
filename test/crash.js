@@ -36,7 +36,7 @@ var test = module.exports = {};
 
 test['actor crash should not crash the configuration/sponsor'] = function (test) {
     test.expect(10);
-    var sponsor = tart.sponsor();
+    var sponsor = tart.minimal();
 
     var crashingActor = function (count) {
         return function crashingActorBeh(message) {

@@ -1,6 +1,6 @@
 /*
 
-forward.js - forward actor pattern test
+pluggable.js - pluggable example script
 
 The MIT License (MIT)
 
@@ -32,20 +32,46 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 var tart = require('../index.js');
 
-var test = module.exports = {};
-
-test['forward actor should pass the message to specified forwarder'] = function (test) {
-    test.expect(1);
-    var sponsor = tart.minimal();
-
-    var sinkActor = sponsor(function (message) {
-        test.equal(message, 'foo');
-        test.done();
-    });
-
-    var forwardActor = sponsor(function (message, context) {
-        sinkActor(message);
-    });
-
-    forwardActor('foo');
+var dispatch = function (deliver) {
+    console.log('delivering a message'); 
+    deliver(); 
 };
+
+var deliver = function deliver(context, message, options) {
+    console.log('delivering message', message, 'to context', context);
+    return function deliver() {
+        try {
+            context.behavior(message);
+        } catch (exception) {
+            console.log('got exception', exception);
+        }
+    };
+};
+
+var constructConfig = function constructConfig(options) {
+    var config = function create(behavior) {
+        var actor = function send(message) {
+            options.dispatch(options.deliver(context, message, options));
+        };
+        var context = {
+            self: actor,
+            behavior: behavior,
+            sponsor: config
+        };
+        console.log('created actor in context', context);
+        return actor;
+    };
+    return config;
+};
+
+var sponsor = tart.pluggable({
+    constructConfig: constructConfig,
+    deliver: deliver,
+    dispatch: dispatch
+});
+
+var actor = sponsor(function (message) {
+    console.log('got message', message);
+});
+
+actor('foo');

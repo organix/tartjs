@@ -36,7 +36,7 @@ var test = module.exports = {};
 
 test['sink behavior should receive message'] = function (test) {
     test.expect(1);
-    var sponsor = tart.sponsor();
+    var sponsor = tart.minimal();
     var sinkActor = sponsor(function (message) {
         test.equal(message, 'foo');
         test.done();

@@ -42,7 +42,7 @@ var loopCompletionTimes = [];
 
 var tart = require('../index.js');
 
-var sponsor = tart.sponsor();
+var sponsor = tart.minimal();
 
 var ringLink = function ringLink(next) {
     return function ringLinkBeh(n) {
