@@ -18,11 +18,12 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
   * [Tests](#tests)
   * [Benchmarks](#benchmarks) 
   * [Documentation](#documentation)
+    * [Tweet](#tweet)
     * [Minimal](#minimal)
     * [Pluggable](#pluggable)
   * [Sources](#sources)
 
-`tart` also happens to fit into a tweet :D
+`tart` happens to fit into a tweet :D
 
     function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c}
 
@@ -100,6 +101,8 @@ chainActor('go');
 
 ## Benchmarks
 
+Benchmarks were run on the [Minimal](#minimal) implementation.
+
 ### Erlang Challenge
 
 Erlang Challenge consists of creating a ring of M actors, sending N simple messages around the ring and increasing M until running out of resources. 
@@ -155,13 +158,39 @@ For rings of sizes larger than 4 Million you may need to expand memory available
 
 The [Minimal](#minimal) implementation is the implementation optimized for fastest execution time. In contrast, [Pluggable](#pluggable) implementation allows for total control of the runtime and execution semantics. Although the default behavior of [Pluggable](#pluggable) is the same as [Minimal](#minimal), it is somewhat slower due to extra overhead incurred by pluggability of control and observability mechanisms.
 
+  * [Tweet](#tweet)
+  * [Minimal](#minimal)
+  * [Pluggable](#pluggable)
+
+### Tweet
+
+**Public API**
+
+  * [tart.tweet()](#tarttweet)
+  * [sponsor(behavior)](#sponsorbehavior)
+  * [actor(message)](#actormessage)
+
+### tart.tweet()
+
+Creates a sponsor capability to create new actors with using the Tweetable implementation :D.
+
+WARNING: If an exception is thrown during message processing the Tweetable run-time will crash. For fastest stable implementation use [Minimal](#minimal).
+
+### sponsor(behavior)
+
+Same as the core [Minimal](#minimal) implementation. _See: [sponsor(behavior)](#sponsorbehavior-1)_
+
+### actor(message)
+
+Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#actormessage-1)_
+
 ### Minimal
 
 **Public API**
 
   * [tart.minimal(\[options\])](#tartminimaloptions)
-  * [sponsor(behavior)](#sponsorbehavior)
-  * [actor(message)](#actormessage)
+  * [sponsor(behavior)](#sponsorbehavior-1)
+  * [actor(message)](#actormessage-1)
 
 ### tart.minimal([options])
 
@@ -226,8 +255,8 @@ actor('hello actor world');
 **Public API**
 
   * [tart.pluggable(\[options\])](#tartpluggableoptions)
-  * [sponsor(behavior)](#sponsorbehavior-1)
-  * [actor(message)](#actormessage-1)
+  * [sponsor(behavior)](#sponsorbehavior-2)
+  * [actor(message)](#actormessage-2)
 
 ### tart.pluggable([options])
 
@@ -294,11 +323,11 @@ actor('foo');
 
 ### sponsor(behavior)
 
-Same as the core [Minimal](#minimal) implementation. _See: [sponsor(behavior)](#sponsorbehavior)_
+Same as the core [Minimal](#minimal) implementation. _See: [sponsor(behavior)](#sponsorbehavior-1)_
 
 ### actor(message)
 
-Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#actormessage)_
+Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#actormessage-1)_
 
 ## Sources
 
