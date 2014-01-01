@@ -14,6 +14,7 @@ JavaScript implementation of [Tiny Actor Run-Time](https://github.com/organix/ta
 
 The goal of `tart` is to provide the smallest possible actor library in JavaScript that has the full power of a "pure" actor model of computation.
 
+  * [Modules](#modules)
   * [Usage](#usage)
   * [Tests](#tests)
   * [Benchmarks](#benchmarks) 
@@ -26,6 +27,21 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
 `tart` happens to fit into a tweet :D
 
     function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c}
+
+## Modules
+
+Here is a selection of modules from the authors of Tart:
+
+  * [tart-lambda](https://github.com/dalnefre/tart-lambda) A simple lambda-calculus evaluator (tart module).
+  * [tart-marshal](https://github.com/dalnefre/tart-marshal) Send messages between memory domains (tart module).
+  * [tart-membrane](https://github.com/tristanls/tart-membrane) Tart membrane implementation (distributed confinement).
+  * [tart-revocable](https://github.com/tristanls/tart-revocable) Tart implementation of a revocable proxy.
+  * [tart-tracing](https://github.com/tristanls/tart-tracing) Tart tracing.
+  * [tart-transport-http](https://github.com/tristanls/tart-transport-http) HTTP transport implementation for Tart.
+  * [tart-transport-https](https://github.com/tristanls/tart-transport-https) HTTPS transport implementation for Tart.
+  * [tart-transport-tcp](https://github.com/tristanls/tart-transport-tcp) TCP transport implementation for Tart.
+  * [tart-transport-tls](https://github.com/tristanls/tart-transport-tls) TLS transport implementation for Tart.
+  * [tart-transport-udp](https://github.com/tristanls/tart-transport-udp) UDP transport implementation for Tart.
 
 ## Usage
 
