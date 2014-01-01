@@ -195,6 +195,7 @@ Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#act
 ### tart.minimal([options])
 
   * `options`: _Object_ _(Default: undefined)_
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time this sponsor receives a non-create message.  
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
   * Return: _Function_ `function (message) {}` A capability to **synchronously** create new actors or send messages to the created sponsor.
 
@@ -265,6 +266,7 @@ actor('hello actor world');
 ### tart.pluggable([options])
 
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time this sponsor receives a non-create message.
     * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ `function (options) {}` Configuration creation function that is given `options`. It should return a capability `function (message) {}` to create new actors and send messages to the created sponsor.
     * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ `function (context, message, options) {}` Deliver function that returns a function for `dispatch` to dispatch.
     * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures. 
@@ -297,18 +299,31 @@ var deliver = function deliver(context, message, options) {
 };
 
 var constructConfig = function constructConfig(options) {
-    var config = function create(behavior) {
-        var actor = function send(message) {
-            options.dispatch(options.deliver(context, message, options));
-        };
-        var context = {
-            self: actor,
-            behavior: behavior,
-            sponsor: config
-        };
-        console.log('created actor in context', context);
-        return actor;
+    var config = function send(message) {
+        // if `message` is an actor `behavior` do synchronous `create`
+        if (arguments.length === 1 && typeof message === 'function') {
+            var actor = function send(msg) {
+                options.dispatch(options.deliver(context, msg, options));
+            };
+            var context = {
+                self: actor,
+                behavior: message,
+                sponsor: config
+            };
+            console.log('created actor in context', context);
+            return actor;
+        }
+
+        // asynchronously deliver the message to the sponsor
+        options.dispatch(options.deliver(configContext, message, options));
     };
+
+    var configContext = {
+        self: config,
+        behavior: options.behavior,
+        sponsor: config
+    };
+
     return config;
 };
 

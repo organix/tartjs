@@ -36,6 +36,8 @@ tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(functio
 
 /*
   * `options`: _Object_ _(Default: undefined)_
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke
+        every time this sponsor receives a non-create message.
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
         `function (exception) {}` An optional handler to call if a sponsored actor
         behavior throws an exception.
@@ -46,6 +48,7 @@ tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(functio
 */
 tart.minimal = function sponsor(options) {
     options = options || {};
+    var behavior = options.behavior || function (message) {};
     var fail = options.fail || function (exception) {};
 
     /*
@@ -74,7 +77,7 @@ tart.minimal = function sponsor(options) {
                         context.behavior(msg);
                     } catch (exception) {
                         fail(exception);
-                    };
+                    }
                 });
             };
             var context = {
@@ -83,7 +86,22 @@ tart.minimal = function sponsor(options) {
                 sponsor: config
             };
             return actor;
-        } 
+        }
+
+        // asynchronously deliver the message to the sponsor
+        setImmediate(function deliver() {
+            try {
+                configContext.behavior(message);
+            } catch (exception) {
+                fail(exception);
+            }
+        });
+    };
+
+    var configContext = {
+        self: config,
+        behavior: options.behavior,
+        sponsor: config
     };
 
     return config;
@@ -91,6 +109,8 @@ tart.minimal = function sponsor(options) {
 
 /*
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke
+        every time this sponsor receives a non-create message.  
     * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ 
         `function (options) {}` Configuration creation function that 
         is given `options`. It should return a capability `function (message) {}` 
@@ -112,6 +132,7 @@ tart.minimal = function sponsor(options) {
 */
 tart.pluggable = function sponsor(options) {
     options = options || {};
+    options.behavior = options.behavior || function (message) {};
     options.fail = options.fail || function (exception) {};
     options.dispatch = options.dispatch || setImmediate;
     options.deliver = options.deliver || function deliver(context, message, options) {
@@ -137,7 +158,17 @@ tart.pluggable = function sponsor(options) {
                 };
                 return actor;
             }
+
+            // asynchronously deliver the message to the sponsor
+            options.dispatch(options.deliver(configContext, message, options));
         };
+
+        var configContext = {
+            self: config,
+            behavior: options.behavior,
+            sponsor: config
+        };
+
         return config;
     };
     return options.constructConfig(options);
