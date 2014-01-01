@@ -195,7 +195,7 @@ Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#act
 ### tart.minimal([options])
 
   * `options`: _Object_ _(Default: undefined)_
-    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time this sponsor receives a non-create message.  
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke gevery time this sponsor receives a non-create message.  
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
   * Return: _Function_ `function (message) {}` A capability to **synchronously** create new actors or send messages to the created sponsor.
 
@@ -342,7 +342,7 @@ actor('foo');
 
 ### sponsor(message)
 
-Same as the core [Minimal](#minimal) implementation. _See: [sponsor(message)](#sponsorbehavior-1)_
+Same as the core [Minimal](#minimal) implementation. _See: [sponsor(message)](#sponsormessage-1)_
 
 ### actor(message)
 
