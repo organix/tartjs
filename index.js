@@ -39,46 +39,53 @@ tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(functio
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
         `function (exception) {}` An optional handler to call if a sponsored actor
         behavior throws an exception.
-  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
+  * Return: _Function_ `function (message) {}` A capability to 
+      **synchronously** create new actors or send messages to the created sponsor.
 
-  Creates a sponsor capability to create new actors with.
+  Creates a sponsor capability to create new actors with and send messages to.
 */
 tart.minimal = function sponsor(options) {
     options = options || {};
     var fail = options.fail || function (exception) {};
 
     /*
-      * `behavior`: _Function_ `function (message) {}` Actor behavior to 
-          invoke every time an actor receives a message.
-      * Return: _Function_ `function (message) {}` Actor reference that can be 
-          invoked to send the actor a message.            
+      * `message`: _Any_ Any message.
+      * Return: _void_ or _Function_ `function (message) {}`.
 
-      Creates a new actor and returns the actor reference in form of a capability
-      to send that actor a message.      
+      A capability to interact with the sponsor configuration.
+
+      If `message` is a `behavior`, **synchronously** creates an `actor` with
+      the specified `behavior` and returns it immediately. 
+
+      If `message` is not a `behavior`, it is asynchronously sent to this sponsor.     
     */
-    var config = function create(behavior) {
-        
-        /*
-          * `message`: _Any_ Any message.
+    var config = function send(message) {
+        // if `message` is an actor `behavior` do synchronous `create`
+        if (arguments.length === 1 && typeof message === 'function') {
+            
+            /*
+              * `message`: _Any_ Any message.
 
-          Asynchronously sends the `message` to the `actor`.
-        */
-        var actor = function send(message) {
-            setImmediate(function deliver() {
-                try {
-                    context.behavior(message);
-                } catch (exception) {
-                    fail(exception);
-                };
-            });
-        };
-        var context = {
-            self: actor,
-            behavior: behavior,
-            sponsor: config
-        };
-        return actor;
+              Asynchronously sends the `message` to the `actor`.
+            */
+            var actor = function send(msg) {
+                setImmediate(function deliver() {
+                    try {
+                        context.behavior(msg);
+                    } catch (exception) {
+                        fail(exception);
+                    };
+                });
+            };
+            var context = {
+                self: actor,
+                behavior: message,
+                sponsor: config
+            };
+            return actor;
+        } 
     };
+
     return config;
 };
 
@@ -86,8 +93,8 @@ tart.minimal = function sponsor(options) {
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
     * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ 
         `function (options) {}` Configuration creation function that 
-        is given `options`. It should return a capability `function (behavior) {}` 
-        to create new actors.
+        is given `options`. It should return a capability `function (message) {}` 
+        to create new actors and send messages to the created sponsor.
     * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ 
         `function (context, message, options) {}` Deliver function that returns 
         a function for `dispatch` to dispatch.
@@ -97,10 +104,11 @@ tart.minimal = function sponsor(options) {
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
         `function (exception) {}` An optional handler to call if a sponsored actor
         behavior throws an exception. 
-  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
+  * Return: _Function_ `function (message) {}` A capability to **synchronously** 
+      create new actors or send messages to the created sponsor.
 
-  Creates a sponsor capability to create new actors with and allows replacing
-  parts of the implementation.
+  Creates a sponsor capability to create new actors with, send messages to, and 
+  allows replacing parts of the implementation.
 */
 tart.pluggable = function sponsor(options) {
     options = options || {};
@@ -116,16 +124,19 @@ tart.pluggable = function sponsor(options) {
         };
     };
     options.constructConfig = options.constructConfig || function constructConfig(options) {
-        var config = function create(behavior) {
-            var actor = function send(message) {
-                options.dispatch(options.deliver(context, message, options));
-            };
-            var context = {
-                self: actor,
-                behavior: behavior,
-                sponsor: config
-            };
-            return actor;
+        var config = function send(message) {
+            // if `message` is an actor `behavior` do synchronous `create`
+            if (arguments.length === 1 && typeof message === 'function') {
+                var actor = function send(msg) {
+                    options.dispatch(options.deliver(context, msg, options));
+                };
+                var context = {
+                    self: actor,
+                    behavior: message,
+                    sponsor: config
+                };
+                return actor;
+            }
         };
         return config;
     };
