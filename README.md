@@ -183,7 +183,7 @@ The [Minimal](#minimal) implementation is the implementation optimized for faste
 **Public API**
 
   * [tart.tweet()](#tarttweet)
-  * [sponsor(behavior)](#sponsorbehavior)
+  * [sponsor(message)](#sponsormessage)
   * [actor(message)](#actormessage)
 
 ### tart.tweet()
@@ -192,9 +192,9 @@ Creates a sponsor capability to create new actors with using the Tweetable imple
 
 WARNING: If an exception is thrown during message processing the Tweetable run-time will crash. For fastest stable implementation use [Minimal](#minimal).
 
-### sponsor(behavior)
+### sponsor(message)
 
-Same as the core [Minimal](#minimal) implementation. _See: [sponsor(behavior)](#sponsorbehavior-1)_
+Same as the core [Minimal](#minimal) implementation. _See: [sponsor(message)](#sponsormessage-1)_
 
 ### actor(message)
 
@@ -205,16 +205,17 @@ Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#act
 **Public API**
 
   * [tart.minimal(\[options\])](#tartminimaloptions)
-  * [sponsor(behavior)](#sponsorbehavior-1)
+  * [sponsor(message)](#sponsormessage-1)
   * [actor(message)](#actormessage-1)
 
 ### tart.minimal([options])
 
-  * `options`: _Object_ _(Default: `undefined`)_
+  * `options`: _Object_ _(Default: undefined)_
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke gevery time this sponsor receives a non-create message.  
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
-  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
+  * Return: _Function_ `function (message) {}` A capability to **synchronously** create new actors or send messages to the created sponsor.
 
-Creates a sponsor capability to create new actors with.
+Creates a sponsor capability to create new actors with and send messages to.
 
 ```javascript
 var tart = require('tart');
@@ -227,12 +228,16 @@ var reportingSponsor = tart.minimal({
 });
 ```
 
-### sponsor(behavior)
+### sponsor(message)
 
-  * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
-  * Return: _Function_ `function (message) {}` Actor reference in form of a capability that can be invoked to send the actor a message.
+  * `message`: _Any_ Any message.
+  * Return: _void_ or _Function_ `function (message) {}`.
 
-Creates a new actor and returns the actor reference in form of a capability to send that actor a message.
+A capability to interact with the sponsor configuration.
+
+If `message` is a `behavior`, **synchronously** creates an `actor` with the specified `behavior` and returns it immediately. 
+
+If `message` is not a `behavior`, it is asynchronously sent to this sponsor.    
 
 ```javascript
 var tart = require('tart');
@@ -245,11 +250,11 @@ var actor = sponsor(function (message) {
 });
 ```
 
-When the `behavior` is invoked upon the receipt of a message, it's `this` will be bound with the following:
+_Note on created actors_: When the created actor's `behavior` is invoked upon the receipt of a message, it's `this` will be bound with the following:
 
   * `this.self`: _Function_ `function (message) {}` Reference to the actor that is executing the `behavior` (in form of a capability that can be invoked to send the actor a message).
   * `this.behavior`: _Function_ `function (message) {}` The behavior of the actor. To change actor behavior (a "become" operation) assign a new function to this parameter.
-  * `this.sponsor`: _Function_ `function (behavior) {}` A capability to create new actors. To create a new actor call `this.sponsor(behavior)`.
+  * `this.sponsor`: _Function_ `function (message) {}` A capability to **synchronously** create new actors and send messages to the sponsor. To create a new actor call `this.sponsor(behavior)`.
 
 ### actor(message)
 
@@ -271,19 +276,20 @@ actor('hello actor world');
 **Public API**
 
   * [tart.pluggable(\[options\])](#tartpluggableoptions)
-  * [sponsor(behavior)](#sponsorbehavior-2)
+  * [sponsor(message)](#sponsormessage-2)
   * [actor(message)](#actormessage-2)
 
 ### tart.pluggable([options])
 
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
-    * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ `function (options) {}` Configuration creation function that is given `options`. It should return a capability `function (behavior) {}` to create new actors.
+    * `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time this sponsor receives a non-create message.
+    * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ `function (options) {}` Configuration creation function that is given `options`. It should return a capability `function (message) {}` to create new actors and send messages to the created sponsor.
     * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ `function (context, message, options) {}` Deliver function that returns a function for `dispatch` to dispatch.
     * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures. 
-    * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.  
-  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
+    * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception. 
+  * Return: _Function_ `function (message) {}` A capability to **synchronously** create new actors or send messages to the created sponsor.
 
-Creates a sponsor capability to create new actors with and allows replacing parts of the implementation.
+Creates a sponsor capability to create new actors with, send messages to, and allows replacing parts of the implementation.
 
 To run the below example run:
 
@@ -309,18 +315,31 @@ var deliver = function deliver(context, message, options) {
 };
 
 var constructConfig = function constructConfig(options) {
-    var config = function create(behavior) {
-        var actor = function send(message) {
-            options.dispatch(options.deliver(context, message, options));
-        };
-        var context = {
-            self: actor,
-            behavior: behavior,
-            sponsor: config
-        };
-        console.log('created actor in context', context);
-        return actor;
+    var config = function send(message) {
+        // if `message` is an actor `behavior` do synchronous `create`
+        if (arguments.length === 1 && typeof message === 'function') {
+            var actor = function send(msg) {
+                options.dispatch(options.deliver(context, msg, options));
+            };
+            var context = {
+                self: actor,
+                behavior: message,
+                sponsor: config
+            };
+            console.log('created actor in context', context);
+            return actor;
+        }
+
+        // asynchronously deliver the message to the sponsor
+        options.dispatch(options.deliver(configContext, message, options));
     };
+
+    var configContext = {
+        self: config,
+        behavior: options.behavior,
+        sponsor: config
+    };
+
     return config;
 };
 
@@ -337,9 +356,9 @@ var actor = sponsor(function (message) {
 actor('foo');
 ```
 
-### sponsor(behavior)
+### sponsor(message)
 
-Same as the core [Minimal](#minimal) implementation. _See: [sponsor(behavior)](#sponsorbehavior-1)_
+Same as the core [Minimal](#minimal) implementation. _See: [sponsor(message)](#sponsormessage-1)_
 
 ### actor(message)
 

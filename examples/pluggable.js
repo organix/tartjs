@@ -49,18 +49,31 @@ var deliver = function deliver(context, message, options) {
 };
 
 var constructConfig = function constructConfig(options) {
-    var config = function create(behavior) {
-        var actor = function send(message) {
-            options.dispatch(options.deliver(context, message, options));
-        };
-        var context = {
-            self: actor,
-            behavior: behavior,
-            sponsor: config
-        };
-        console.log('created actor in context', context);
-        return actor;
+    var config = function send(message) {
+        // if `message` is an actor `behavior` do synchronous `create`
+        if (arguments.length === 1 && typeof message === 'function') {
+            var actor = function send(msg) {
+                options.dispatch(options.deliver(context, msg, options));
+            };
+            var context = {
+                self: actor,
+                behavior: message,
+                sponsor: config
+            };
+            console.log('created actor in context', context);
+            return actor;
+        }
+
+        // asynchronously deliver the message to the sponsor
+        options.dispatch(options.deliver(configContext, message, options));
     };
+
+    var configContext = {
+        self: config,
+        behavior: options.behavior,
+        sponsor: config
+    };
+
     return config;
 };
 

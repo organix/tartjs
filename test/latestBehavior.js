@@ -67,3 +67,37 @@ test["serial actor's latest behavior should be the one handling the next message
     var serialActor = sponsor(serial(false, false, false));
     serialActor('foo');
 };
+
+test["sponsor serial latest behavior should be the one handling the next message"] = function (test) {
+    test.expect(9);
+    var sponsor = tart.minimal();
+
+    var serial = function (first, second, third) {
+        var firstBeh = function firstBeh (message) {
+            this.behavior = secondBeh;
+            test.equal(message, 'foo');
+            test.ok(!first);
+            first = true;
+            this.self(message);
+            this.self(message);
+        };
+        var secondBeh = function secondBeh (message) {
+            this.behavior = thirdBeh;
+            test.equal(message, 'foo');
+            test.ok(first);
+            test.ok(!second);
+            second = true;
+        };        
+        var thirdBeh = function thirdBeh (message) {
+            test.equal(message, 'foo');
+            test.ok(first);
+            test.ok(second);
+            test.ok(!third);
+            test.done();
+        };        
+        return firstBeh;
+    };
+
+    var sponsor = tart.minimal({behavior: serial(false, false, false)});
+    sponsor('foo');
+};
