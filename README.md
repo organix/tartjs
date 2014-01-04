@@ -36,7 +36,8 @@ Here is a selection of modules from the authors of Tart:
   * [tart-marshal](https://github.com/dalnefre/tart-marshal) Send messages between memory domains (tart module).
   * [tart-membrane](https://github.com/tristanls/tart-membrane) Tart membrane implementation (distributed confinement).
   * [tart-revocable](https://github.com/tristanls/tart-revocable) Tart implementation of a revocable proxy.
-  * [tart-tracing](https://github.com/tristanls/tart-tracing) Tart tracing.
+  * [tart-stepping](https://github.com/dalnefre/tart-stepping) Tart stepping control.
+  * [tart-tracing](https://github.com/tristanls/tart-tracing) Tart tracing control.
   * [tart-transport-http](https://github.com/tristanls/tart-transport-http) HTTP transport implementation for Tart.
   * [tart-transport-https](https://github.com/tristanls/tart-transport-https) HTTPS transport implementation for Tart.
   * [tart-transport-tcp](https://github.com/tristanls/tart-transport-tcp) TCP transport implementation for Tart.
