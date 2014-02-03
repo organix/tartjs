@@ -32,6 +32,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
 
 Here is a selection of modules from the authors of Tart:
 
+  * [tart-adapter](https://github.com/tristanls/tart-adapter) Adapter turning synchronous functions into asynchronous Tart actors.
   * [tart-lambda](https://github.com/dalnefre/tart-lambda) A simple lambda-calculus evaluator (tart module).
   * [tart-marshal](https://github.com/dalnefre/tart-marshal) Send messages between memory domains (tart module).
   * [tart-membrane](https://github.com/tristanls/tart-membrane) Tart membrane implementation (distributed confinement).
@@ -43,6 +44,7 @@ Here is a selection of modules from the authors of Tart:
   * [tart-transport-tcp](https://github.com/tristanls/tart-transport-tcp) TCP transport implementation for Tart.
   * [tart-transport-tls](https://github.com/tristanls/tart-transport-tls) TLS transport implementation for Tart.
   * [tart-transport-udp](https://github.com/tristanls/tart-transport-udp) UDP transport implementation for Tart.
+  * [tart-vm](https://github.com/tristanls/tart-vm) Tart behavior sandbox.
 
 ## Usage
 
