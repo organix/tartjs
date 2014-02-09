@@ -38,6 +38,7 @@ Here is a selection of modules from the authors of Tart:
   * [tart-membrane](https://github.com/tristanls/tart-membrane) Tart membrane implementation (distributed confinement).
   * [tart-revocable](https://github.com/tristanls/tart-revocable) Tart implementation of a revocable proxy.
   * [tart-stepping](https://github.com/dalnefre/tart-stepping) Tart stepping control.
+  * [tart-stepping-sandbox](https://github.com/tristanls/tart-stepping-sandbox) Remotely controlled sandbox for controlling [tart-stepping](https://github.com/dalnefre/tart-stepping).
   * [tart-tracing](https://github.com/tristanls/tart-tracing) Tart tracing control.
   * [tart-transport-http](https://github.com/tristanls/tart-transport-http) HTTP transport implementation for Tart.
   * [tart-transport-https](https://github.com/tristanls/tart-transport-https) HTTPS transport implementation for Tart.
