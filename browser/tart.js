@@ -1,8 +1,8 @@
 /*
  * TartJS -- Tiny Actor-RunTime
  */
-/*global TART */
-var TART = (function () {
+/*global tart */
+var tart = (function () {
     var tart = {};
     tart.config = function config(options) {
 		options = options || {};
