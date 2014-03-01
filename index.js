@@ -43,7 +43,7 @@ tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(functio
 
   Creates a sponsor capability to create new actors with.
 */
-tart.minimal = function sponsor(options) {
+tart.minimal = function config(options) {
     options = options || {};
     var dispatch = options.dispatch || setImmediate;
     var fail = options.fail || function (exception) {};
@@ -57,7 +57,7 @@ tart.minimal = function sponsor(options) {
       Creates a new actor and returns the actor reference in form of a capability
       to send that actor a message.      
     */
-    var config = function create(behavior) {
+    var sponsor = function create(behavior) {
         
         /*
           * `message`: _Any_ Any message.
@@ -76,11 +76,11 @@ tart.minimal = function sponsor(options) {
         var context = {
             self: actor,
             behavior: behavior,
-            sponsor: config
+            sponsor: sponsor
         };
         return actor;
     };
-    return config;
+    return sponsor;
 };
 
 /*
@@ -103,7 +103,7 @@ tart.minimal = function sponsor(options) {
   Creates a sponsor capability to create new actors with and allows replacing
   parts of the implementation.
 */
-tart.pluggable = function sponsor(options) {
+tart.pluggable = function config(options) {
     options = options || {};
     options.fail = options.fail || function (exception) {};
     options.dispatch = options.dispatch || setImmediate;
@@ -117,18 +117,18 @@ tart.pluggable = function sponsor(options) {
         };
     };
     options.constructConfig = options.constructConfig || function constructConfig(options) {
-        var config = function create(behavior) {
+        var sponsor = function create(behavior) {
             var actor = function send(message) {
                 options.dispatch(options.deliver(context, message, options));
             };
             var context = {
                 self: actor,
                 behavior: behavior,
-                sponsor: config
+                sponsor: sponsor
             };
             return actor;
         };
-        return config;
+        return sponsor;
     };
     return options.constructConfig(options);
 };
