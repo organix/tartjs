@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TartJS example</title>
+<script src="tart.js"></script>
+<script>
+window.addEventListener('load', function onLoad() {
+	var sponsor = tart.config({
+		fail: function (exception) {
+			console.log('FAIL!', exception);
+		}
+	});
+	var sequencer = function sequencer(state, notify) {
+		var seq = 0;  // monotonically increasing sequence number
+		return function sequencerBeh(update) {
+			seq += 1;  // increment state-change sequence number
+			state = update(state);  // apply update function to generate new state
+			notify({ sequence: seq, state: state });  // async notification
+		};
+	};
+	var elementInnerHtml = function elementInnerHtml(id) {
+		var el = document.getElementById(id);
+		var seq = 0;  // monotonically increasing sequence number
+		return function elementInnerHtmlBeh(msg) {
+			if (seq < msg.sequence) {
+				seq = msg.sequence;
+				el.innerHTML = msg.state;
+			}
+		};
+	};
+	var counterGui = sponsor(elementInnerHtml('counter'));
+	var counterModel = sponsor(sequencer(0, counterGui));
+	var inc = function inc(n) { return n + 1; }
+	var dec = function dec(n) { return n - 1; }
+	document.getElementById('inc').addEventListener('click', function clickInc() {
+		counterModel(inc);
+	}, false);
+	document.getElementById('dec').addEventListener('click', function clickDec() {
+		counterModel(dec);
+	}, false);
+}, false);
+</script>
+<style type="text/css">
+table, tr, th, td {
+	border-collapse: collapse;
+	border: 1px solid #666;
+}
+th, td {
+	padding: 2px 6px;
+}
+th {
+	background: #CCC;
+}
+.fail {
+	background: #F99;
+}
+.ok {
+	background: #9F9;
+}
+</style>
+</head>
+<body>
+
+<h1>TartJS: Tiny Actor-RunTime</h1>
+
+<div id="actorGui">
+<button id="inc">+</button>
+<span id="counter"></span>
+<button id="dec">-</button>
+</div>
+
+</body>
+</html>
