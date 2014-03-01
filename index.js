@@ -45,6 +45,7 @@ tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(functio
 */
 tart.minimal = function sponsor(options) {
     options = options || {};
+    var dispatch = options.dispatch || setImmediate;
     var fail = options.fail || function (exception) {};
 
     /*
@@ -64,7 +65,7 @@ tart.minimal = function sponsor(options) {
           Asynchronously sends the `message` to the `actor`.
         */
         var actor = function send(message) {
-            setImmediate(function deliver() {
+            dispatch(function deliver() {
                 try {
                     context.behavior(message);
                 } catch (exception) {
