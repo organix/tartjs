@@ -3,83 +3,41 @@
 <head>
 <meta charset="utf-8">
 <title>TartJS example</title>
+<script src="tart.js"></script>
 <script>
 window.addEventListener('load', function onLoad() {
-	if (typeof setImmediate === 'undefined') {
-		setImmediate = function setImmediate(fn) { setTimeout(fn, 0); }
-	}
-	/*
-		* `options`: _Object_ _(Default: undefined)_
-			* `fail`: _Function_ _(Default: `function (exception) {}`)_ 
-				`function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
-		* Return: _Function_ `function (behavior) {}` A capability to create new actors.
-
-		Creates a sponsor capability to create new actors with.
-	*/
-	var actorConfig = function config(options) {
-		options = options || {};
-		var fail = options.fail || function (exception) {};
-
-		/*
-			* `behavior`: _Function_ `function (message) {}` Actor behavior to invoke every time an actor receives a message.
-			* Return: _Function_ `function (message) {}` Actor reference that can be invoked to send the actor a message.            
-
-			Creates a new actor and returns the actor reference in form of a capability to send that actor a message.
-		*/
-		var sponsor = function create(behavior) {
-			
-			/*
-				* `message`: _Any_ Any message.
-
-				Asynchronously sends the `message` to the `actor`.
-			*/
-			var actor = function send(message) {
-				setImmediate(function deliver() {
-					try {
-						context.behavior(message);
-					} catch (exception) {
-						fail(exception);
-					};
-				});
-			};
-			var context = {
-				self: actor,
-				behavior: behavior,
-				sponsor: sponsor
-			};
-			return actor;
-		};
-		return sponsor;
-	};
-	var sponsor = actorConfig({
+	var sponsor = TART.config({
 		fail: function (exception) {
 			console.log('FAIL!', exception);
 		}
 	});
-	var model = {
-		something: {
-			count: 0
-		}
-	};
-	var countSomethingModel = sponsor(function (change) {
-		var n = model.something.count;
-		n += change;
-		model.something.count = n;
-		counterGui(n);  // notify gui element
-	});
-	var elementInnerHtmlBeh = function (id) {
-		var el = document.getElementById('counter');
-		return function (html) {
-			el.innerHTML = html;
+	var sequencer = function sequencer(state, notify) {
+		var seq = 0;  // monotonically increasing sequence number
+		return function sequencerBeh(update) {
+			seq += 1;  // increment state-change sequence number
+			state = update(state);  // apply update function to generate new state
+			notify({ sequence: seq, state: state });  // async notification
 		};
 	};
-	var counterGui = sponsor(elementInnerHtmlBeh('counter'));
-	countSomethingModel(0);  // trigger initial update
+	var elementInnerHtml = function elementInnerHtml(id) {
+		var el = document.getElementById(id);
+		var seq = 0;  // monotonically increasing sequence number
+		return function elementInnerHtmlBeh(msg) {
+			if (seq < msg.sequence) {
+				seq = msg.sequence;
+				el.innerHTML = msg.state;
+			}
+		};
+	};
+	var counterGui = sponsor(elementInnerHtml('counter'));
+	var counterModel = sponsor(sequencer(0, counterGui));
+	var inc = function inc(n) { return n + 1; }
+	var dec = function dec(n) { return n - 1; }
 	document.getElementById('inc').addEventListener('click', function clickInc() {
-		countSomethingModel(1);
+		counterModel(inc);
 	}, false);
 	document.getElementById('dec').addEventListener('click', function clickDec() {
-		countSomethingModel(-1);
+		counterModel(dec);
 	}, false);
 }, false);
 </script>
