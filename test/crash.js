@@ -4,7 +4,7 @@ crash.js - actor crash test
 
 The MIT License (MIT)
 
-Copyright (c) 2013 Dale Schumacher, Tristan Slominski
+Copyright (c) 2013-2015 Dale Schumacher, Tristan Slominski
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -33,6 +33,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 var tart = require('../index.js');
 
 var test = module.exports = {};
+
+test['actor crash should not crash es6Tweet configuration/sponsor'] = test =>
+{
+    test.expect(10);
+    const sponsor = tart.es6Tweet();
+
+    const crashingActor = count =>
+    {
+        return message =>
+        {
+            count--;
+            test.ok(true);
+            if (count > 0)
+            {
+                throw new Error("boom!");
+            }
+            test.done();
+        };
+    };
+
+    const crasher = sponsor(crashingActor(10));
+
+    for (let i = 0; i < 10; i++)
+    {
+        crasher('explode');
+    }
+};
 
 test['actor crash should not crash the configuration/sponsor'] = function (test) {
     test.expect(10);
