@@ -17,7 +17,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
   * [Modules](#modules)
   * [Usage](#usage)
   * [Tests](#tests)
-  * [Benchmarks](#benchmarks) 
+  * [Benchmarks](#benchmarks)
   * [Documentation](#documentation)
     * [Tweet](#tweet)
     * [Minimal](#minimal)
@@ -27,6 +27,10 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
 `tart` happens to fit into a tweet :D
 
     function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c}
+
+If you use ES6 it's even smaller with an additional feature of not crashing when behaviors throw exceptions ;)
+
+    ()=>{let c=(b)=>{let a=(m)=>{setImmediate(()=>{try{x.behavior(m)}catch(e){}})},x={self:a,behavior:b,sponsor:c};return a};return c};
 
 ## Modules
 
@@ -62,7 +66,7 @@ var sponsor = tart.minimal();
 
 // create an actor that has no state
 var statelessActor = sponsor(function (message) {
-    console.log('got message', message); 
+    console.log('got message', message);
 });
 
 // create an actor with state
@@ -100,7 +104,7 @@ var chainActorBeh = function (count) {
             var next = this.sponsor(chainActorBeh(count));
             next(message);
         }
-    }; 
+    };
 };
 
 var chainActor = sponsor(chainActorBeh(10));
@@ -125,7 +129,7 @@ Benchmarks were run on the [Minimal](#minimal) implementation.
 
 ### Erlang Challenge
 
-Erlang Challenge consists of creating a ring of M actors, sending N simple messages around the ring and increasing M until running out of resources. 
+Erlang Challenge consists of creating a ring of M actors, sending N simple messages around the ring and increasing M until running out of resources.
 
 The benchmark implements a modified version of the challenge by creating 100,000 actors and running 10 simple messages around the ring.
 
@@ -242,7 +246,7 @@ Creates a new actor and returns the actor reference in form of a capability to s
 var tart = require('tart');
 var sponsor = tart.minimal();
 var actor = sponsor(function (message) {
-    console.log('got message', message); 
+    console.log('got message', message);
     console.log(this.self);
     console.log(this.behavior);
     console.log(this.sponsor);
@@ -283,8 +287,8 @@ actor('hello actor world');
   * `options`: _Object_ _(Default: undefined)_ Optional overrides.
     * `constructConfig`: _Function_ _(Default: `function (options) {}`)_ `function (options) {}` Configuration creation function that is given `options`. It should return a capability `function (behavior) {}` to create new actors.
     * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ `function (context, message, options) {}` Deliver function that returns a function for `dispatch` to dispatch.
-    * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures. 
-    * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.  
+    * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures.
+    * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
 Creates a sponsor capability to create new actors with and allows replacing parts of the implementation.
@@ -297,8 +301,8 @@ To run the below example run:
 var tart = require('tart');
 
 var dispatch = function (deliver) {
-    console.log('delivering a message'); 
-    deliver(); 
+    console.log('delivering a message');
+    deliver();
 };
 
 var deliver = function deliver(context, message, options) {

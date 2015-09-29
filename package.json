@@ -10,6 +10,9 @@
     "test": "node scripts/test.js"
   },
   "main": "index.js",
+  "engines": {
+    "node": ">=4.1.0"
+  },
   "devDependencies": {
     "nodeunit": "0.9.x"
   },
