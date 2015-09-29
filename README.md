@@ -183,7 +183,7 @@ For rings of sizes larger than 4 Million you may need to expand memory available
 The [Minimal](#minimal) implementation is the implementation optimized for fastest execution time. In contrast, [Pluggable](#pluggable) implementation allows for total control of the runtime and execution semantics. Although the default behavior of [Pluggable](#pluggable) is the same as [Minimal](#minimal), it is somewhat slower due to extra overhead incurred by pluggability of control and observability mechanisms.
 
   * [Tweet](#tweet)
-  * [ES6Tweet](#es6Tweet)
+  * [ES6Tweet](#es6tweet)
   * [Minimal](#minimal)
   * [Pluggable](#pluggable)
 
