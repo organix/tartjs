@@ -11,7 +11,7 @@
   },
   "main": "index.js",
   "devDependencies": {
-    "nodeunit": "0.8.x"
+    "nodeunit": "0.9.x"
   },
   "repository": {
     "type": "git",
