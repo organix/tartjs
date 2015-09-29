@@ -20,6 +20,7 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
   * [Benchmarks](#benchmarks)
   * [Documentation](#documentation)
     * [Tweet](#tweet)
+    * [ES6Tweet](#es6tweet)
     * [Minimal](#minimal)
     * [Pluggable](#pluggable)
   * [Sources](#sources)
