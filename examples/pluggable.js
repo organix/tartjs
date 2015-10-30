@@ -53,6 +53,7 @@ var constructConfig = function constructConfig(options) {
         var actor = function send(message) {
             options.dispatch(options.deliver(context, message, options));
         };
+        actor = options.annotate(actor);
         var context = {
             self: actor,
             behavior: behavior,
@@ -64,10 +65,21 @@ var constructConfig = function constructConfig(options) {
     return config;
 };
 
+var annotate = (function (n) {
+    return function annotate(actor) {
+        var id = '@' + n++;
+        actor.toString = actor.inspect = function () {
+            return id;
+        };
+        return actor;
+    };
+})(0);
+
 var sponsor = tart.pluggable({
     constructConfig: constructConfig,
     deliver: deliver,
-    dispatch: dispatch
+    dispatch: dispatch,
+    annotate: annotate
 });
 
 var actor = sponsor(function (message) {

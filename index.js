@@ -126,12 +126,13 @@ tart.pluggable = function config(options) {
             var actor = function send(message) {
                 options.dispatch(options.deliver(context, message, options));
             };
+            actor = options.annotate(actor);
             var context = {
                 self: actor,
                 behavior: behavior,
                 sponsor: sponsor
             };
-            return options.annotate(actor);
+            return actor;
         };
         return sponsor;
     };
