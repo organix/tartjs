@@ -106,3 +106,28 @@ test['pluggable allows for alternate create mechanism'] = function (test) {
     var actor = sponsor(newBeh);
     actor('foo');
 };
+
+test['pluggable allows for actor annotation mechanism'] = function (test) {
+    test.expect(2);
+
+    var annotate = (function (n) {
+        return function annotate(actor) {
+            var id = '@' + n++;
+            actor.toString = actor.inspect = function () {
+                return id;
+            };
+            return actor;
+        };
+    })(0);
+
+    var sponsor = tart.pluggable({annotate: annotate});
+
+    var noop = function () {};
+    var foo = sponsor(noop);
+    var bar = sponsor(noop);
+
+    test.equal('@0', foo.toString());
+    test.equal('@1', bar.inspect());
+
+    test.done();
+};

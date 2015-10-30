@@ -285,6 +285,7 @@ actor('hello actor world');
     * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ `function (context, message, options) {}` Deliver function that returns a function for `dispatch` to dispatch.
     * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures. 
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.  
+    * `annotate`: _Function_ _(Default: `function (actor) { return actor; }`)_ `function (actor) {}` An optional method to wrap/modify newly-created actors.  
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
 Creates a sponsor capability to create new actors with and allows replacing parts of the implementation.
@@ -317,6 +318,7 @@ var constructConfig = function constructConfig(options) {
         var actor = function send(message) {
             options.dispatch(options.deliver(context, message, options));
         };
+        actor = options.annotate(actor);
         var context = {
             self: actor,
             behavior: behavior,
@@ -328,10 +330,21 @@ var constructConfig = function constructConfig(options) {
     return config;
 };
 
+var annotate = (function (n) {
+    return function annotate(actor) {
+        var id = '@' + n++;
+        actor.toString = actor.inspect = function () {
+            return id;
+        };
+        return actor;
+    };
+})(0);
+
 var sponsor = tart.pluggable({
     constructConfig: constructConfig,
     deliver: deliver,
-    dispatch: dispatch
+    dispatch: dispatch,
+    annotate: annotate
 });
 
 var actor = sponsor(function (message) {
@@ -348,6 +361,16 @@ Same as the core [Minimal](#minimal) implementation. _See: [sponsor(behavior)](#
 ### actor(message)
 
 Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#actormessage-1)_
+
+## Releases
+
+We follow semantic versioning policy ([semver.org](http://semver.org/)):
+
+>Given a version number MAJOR.MINOR.PATCH, increment the:
+>
+>MAJOR version when you make incompatible API changes,<br/>
+>MINOR version when you add functionality in a backwards-compatible manner, and<br/>
+>PATCH version when you make backwards-compatible bug fixes.
 
 ## Sources
 

@@ -11,6 +11,7 @@ window.addEventListener('load', function onLoad() {
 			console.log('FAIL!', exception);
 		}
 	});
+
 	var sequencer = function sequencer(state, notify) {
 		var seq = 0;  // monotonically increasing sequence number
 		return function sequencerBeh(update) {
@@ -30,15 +31,115 @@ window.addEventListener('load', function onLoad() {
 		};
 	};
 	var counterGui = sponsor(elementInnerHtml('counter'));
-	var counterModel = sponsor(sequencer(0, counterGui));
-	var inc = function inc(n) { return n + 1; }
-	var dec = function dec(n) { return n - 1; }
+	var counterModel = sequencer(0, counterGui);
+	var inc = function inc(n) { return n + 1; };
+	var dec = function dec(n) { return n - 1; };
 	document.getElementById('inc').addEventListener('click', function clickInc() {
 		counterModel(inc);
 	}, false);
 	document.getElementById('dec').addEventListener('click', function clickDec() {
 		counterModel(dec);
 	}, false);
+
+	var M = 1000;
+	var N = 5;
+	var constructionStartTime;
+	var constructionEndTime;
+	var loopCompletionTimes = [];
+	var timestamp = function timestamp() {
+		return Date.now();
+	};
+	var ringLink = function ringLink(next) {
+		return function ringLinkBeh(n) {
+			next(n);
+		};
+	};
+	var ringLast = function ringLast(first) {
+		return function ringLastBeh(n) {
+			var t = timestamp();
+			loopCompletionTimes.push(t);
+			console.log('ringLast:', n, t);
+			if (--n > 0) {
+				first(n);
+			} else {
+				this.behavior = function sinkBeh(msg) {};
+				reportTiming();
+			}
+		};
+	};
+	var ringBuilder = function ringBuilder(m) {
+		return function ringBuilderBeh(msg) {
+			if (--m > 0) {
+				var next = this.sponsor(ringBuilder(m));
+				next(msg);
+				this.behavior = ringLink(next);
+			} else {
+				constructionEndTime = timestamp();
+				console.log('ringBuilder:', 'sending', msg.n, 'messages');
+				msg.first(msg.n);
+				this.behavior = ringLast(msg.first);
+			}
+		};
+	};
+	var reportTiming = function reportTiming() {
+		var i;
+		var t0 = constructionStartTime;
+		var t1 = constructionEndTime;
+		console.log('constructionStartTime', t0);
+		console.log('constructionEndTime', t1);
+		console.log('construction:', t1 + ' - ' + t0 + ' = ' + (t1 - t0));
+		t0 = t1;
+		for (i = 0; i < loopCompletionTimes.length; ++i) {
+			t1 = loopCompletionTimes[i];
+			console.log(t1 + ' - ' + t0 + ' = ' + (t1 - t0));
+			t0 = t1;
+		}
+	}
+	console.log('starting', M, 'actor ring');
+	constructionStartTime = timestamp();
+	var ring = sponsor(ringBuilder(M));
+	ring({first: ring, n: N});
+
+
+/* <hewitt-schumacher> */
+
+	var send = function send(recipient, message, callback) {
+		invokeLater(function () {
+			try {
+				var returnValue = recipient.behavior(message);
+				callback(false, returnValue);
+			} catch (error) {
+				callback(error);
+			}
+		});
+	};
+
+	var createAccount = function createAccount() {
+		return {
+			balance: 0,
+			behavior: function (message) {
+				if (message.type === 'deposit') {
+					this.balance += message.amount;
+					return this.balance;
+				} else {
+					throw new Error('Not Understood');
+				}
+			}
+		};
+	};
+
+	var account = createAccount();
+
+	send(account, { type:'deposit', amount:13.42 }, 
+		function (error, returnValue) {
+			if (error) {
+				throw error;
+			}
+			console.log('New balance is', returnValue);
+		});
+
+/* </hewitt-schumacher> */
+
 }, false);
 </script>
 <style type="text/css">
@@ -62,7 +163,7 @@ th {
 </head>
 <body>
 
-<h1>TartJS: Tiny Actor-RunTime</h1>
+<h1>TartJS: Tiny Actor Run-Time</h1>
 
 <div id="actorGui">
 <button id="inc">+</button>

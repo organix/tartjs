@@ -98,6 +98,8 @@ tart.minimal = function config(options) {
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ 
         `function (exception) {}` An optional handler to call if a sponsored actor
         behavior throws an exception. 
+    * `annotate`: _Function_ _(Default: `function (actor) { return actor; }`)_ 
+        `function (actor) {}` An optional method to wrap/modify newly-created actors.  
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
   Creates a sponsor capability to create new actors with and allows replacing
@@ -106,6 +108,9 @@ tart.minimal = function config(options) {
 tart.pluggable = function config(options) {
     options = options || {};
     options.fail = options.fail || function (exception) {};
+    options.annotate = options.annotate || function annotate(actor) {
+        return actor;
+    };
     options.dispatch = options.dispatch || setImmediate;
     options.deliver = options.deliver || function deliver(context, message, options) {
         return function deliver() {
@@ -121,6 +126,7 @@ tart.pluggable = function config(options) {
             var actor = function send(message) {
                 options.dispatch(options.deliver(context, message, options));
             };
+            actor = options.annotate(actor);
             var context = {
                 self: actor,
                 behavior: behavior,
