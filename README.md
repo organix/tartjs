@@ -285,6 +285,7 @@ actor('hello actor world');
     * `deliver`: _Function_ _(Default: `function (context, message, options) {}`)_ `function (context, message, options) {}` Deliver function that returns a function for `dispatch` to dispatch.
     * `dispatch`: _Function_ _(Default: `setImmediate`)_ `function (deliver) {}` Dispatch function for dispatching `deliver` closures. 
     * `fail`: _Function_ _(Default: `function (exception) {}`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.  
+    * `annotate`: _Function_ _(Default: `function (actor) { return actor; }`)_ `function (actor) {}` An optional method to wrap/modify newly-created actors.  
   * Return: _Function_ `function (behavior) {}` A capability to create new actors.
 
 Creates a sponsor capability to create new actors with and allows replacing parts of the implementation.
