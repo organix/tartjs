@@ -33,13 +33,14 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
 Here is a selection of modules from the authors of Tart:
 
   * [tart-adapter](https://github.com/tristanls/tart-adapter) Adapter turning synchronous functions into asynchronous Tart actors.
-  * [tart-lambda](https://github.com/dalnefre/tart-lambda) A simple lambda-calculus evaluator (tart module).
-  * [tart-marshal](https://github.com/dalnefre/tart-marshal) Send messages between memory domains (tart module).
+  * [tart-ansible](https://github.com/tristanls/tart-ansible) Enables remote message delivery for Tart actors.
+  * [tart-lambda](https://github.com/dalnefre/tart-lambda) A simple lambda-calculus evaluator.
+  * [tart-marshal](https://github.com/dalnefre/tart-marshal) Send messages between memory domains (JSON serialization).
   * [tart-membrane](https://github.com/tristanls/tart-membrane) Tart membrane implementation (distributed confinement).
   * [tart-revocable](https://github.com/tristanls/tart-revocable) Tart implementation of a revocable proxy.
-  * [tart-stepping](https://github.com/dalnefre/tart-stepping) Tart stepping control.
+  * [tart-stepping](https://github.com/dalnefre/tart-stepping). --DEPRECATED-- superceded by [tart-tracing](https://github.com/tristanls/tart-tracing).
   * [tart-stepping-sandbox](https://github.com/tristanls/tart-stepping-sandbox) Remotely controlled sandbox for controlling [tart-stepping](https://github.com/dalnefre/tart-stepping).
-  * [tart-tracing](https://github.com/tristanls/tart-tracing) Tart tracing control.
+  * [tart-tracing](https://github.com/tristanls/tart-tracing) Tart tracing control (maintains a full event history for debugging).
   * [tart-transport-http](https://github.com/tristanls/tart-transport-http) HTTP transport implementation for Tart.
   * [tart-transport-https](https://github.com/tristanls/tart-transport-https) HTTPS transport implementation for Tart.
   * [tart-transport-tcp](https://github.com/tristanls/tart-transport-tcp) TCP transport implementation for Tart.
