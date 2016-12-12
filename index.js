@@ -4,7 +4,7 @@ index.js - "tartjs": Tiny Actor Run-Time in JavaScript
 
 The MIT License (MIT)
 
-Copyright (c) 2013-2015 Dale Schumacher, Tristan Slominski
+Copyright (c) 2013-2016 Dale Schumacher, Tristan Slominski
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
@@ -34,7 +34,7 @@ var tart = module.exports;
 
 tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c};
 
-tart.es6Tweet = (f)=>{let s=(b)=>{let a=(m)=>{setImmediate(()=>{try{x.behavior(m)}catch(e){f&&f(e)}})},x={self:a,behavior:b,sponsor:s};return a};return s};
+tart.es6Tweet = (f)=>{let c=(b)=>{let a=(m)=>{setImmediate(()=>{try{x.behavior(m)}catch(e){f&&f(e)}})},x={self:a,behavior:b,sponsor:c};return a};return c};
 
 /*
   * `options`: _Object_ _(Default: undefined)_
