@@ -29,9 +29,9 @@ The goal of `tart` is to provide the smallest possible actor library in JavaScri
 
     function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c}
 
-If you use ES6 it's even smaller with an additional feature of not crashing when behaviors throw exceptions ;)
+If you use ES6 it's even smaller with an additional feature of optional failure handler `f` to handle situations when behaviors throw exceptions ;)
 
-    ()=>{let c=(b)=>{let a=(m)=>{setImmediate(()=>{try{x.behavior(m)}catch(e){}})},x={self:a,behavior:b,sponsor:c};return a};return c};
+    (f)=>{let s=(b)=>{let a=(m)=>{setImmediate(()=>{try{x.behavior(m)}catch(e){f&&f(e)}})},x={self:a,behavior:b,sponsor:s};return a};return s};
 
 ## Modules
 

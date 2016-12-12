@@ -34,7 +34,7 @@ var tart = module.exports;
 
 tart.tweet = function(){var c=function(b){var a=function(m){setImmediate(function(){x.behavior(m)})},x={self:a,behavior:b,sponsor:c};return a};return c};
 
-tart.es6Tweet = ()=>{let c=(b)=>{let a=(m)=>{setImmediate(()=>{try{x.behavior(m)}catch(e){}})},x={self:a,behavior:b,sponsor:c};return a};return c};
+tart.es6Tweet = (f)=>{let s=(b)=>{let a=(m)=>{setImmediate(()=>{try{x.behavior(m)}catch(e){f&&f(e)}})},x={self:a,behavior:b,sponsor:s};return a};return s};
 
 /*
   * `options`: _Object_ _(Default: undefined)_
