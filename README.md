@@ -214,13 +214,16 @@ Same as the core [Minimal](#minimal) implementation. _See: [actor(message)](#act
 
 **Public API**
 
-  * [tart.es6Tweet()](#tartes6tweet)
+  * [tart.es6Tweet(fail)](#tartes6tweetfail)
   * [sponsor(behavior)](#sponsorbehavior-1)
   * [actor(message)](#actormessage-1)
 
-### tart.es6Tweet()
+### tart.es6Tweet(fail)
 
-Creates a sponsor capability to create new actors with using the ES6 Tweetable (and non-crashing) implementation :D.
+  * `fail`: _Function_ _(Default: `undefined`)_ `function (exception) {}` An optional handler to call if a sponsored actor behavior throws an exception.
+  * Return: _Function_ `function (behavior) {}` A capability to create new actors.
+
+Creates a sponsor capability to create new actors using the ES6 Tweetable implementation :D.
 
 ### sponsor(behavior)
 
